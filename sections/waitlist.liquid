@@ -80,6 +80,32 @@
     max-width: 46rem;
   }
 
+  .waitlist-{{ section.id }}__window-image-frame {
+    position: relative;
+    width: 100%;
+  }
+
+  .waitlist-{{ section.id }}__window-image-frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .waitlist-{{ section.id }}__window-image-slot {
+    position: absolute;
+    top: {{ section.settings.window_image_slot_top }}%;
+    left: {{ section.settings.window_image_slot_left }}%;
+    width: {{ section.settings.window_image_slot_width }}%;
+    height: {{ section.settings.window_image_slot_height }}%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.1rem;
+    overflow: auto;
+    padding: 0.5rem;
+  }
+
   .waitlist-{{ section.id }}__window-arch {
     position: relative;
     width: 100%;
@@ -189,31 +215,58 @@
 
     {%- if section.settings.klaviyo_form_class != blank -%}
       <div class="waitlist-{{ section.id }}__window{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-        <div class="waitlist-{{ section.id }}__window-arch" aria-hidden="true">
-          <span class="waitlist-{{ section.id }}__window-mullion waitlist-{{ section.id }}__window-mullion--left"></span>
-          <span class="waitlist-{{ section.id }}__window-mullion waitlist-{{ section.id }}__window-mullion--center"></span>
-          <span class="waitlist-{{ section.id }}__window-mullion waitlist-{{ section.id }}__window-mullion--right"></span>
-        </div>
-        <div class="waitlist-{{ section.id }}__window-body">
-          <div class="waitlist-{{ section.id }}__window-transom" aria-hidden="true"></div>
+        {%- if section.settings.window_image != blank -%}
+          <div class="waitlist-{{ section.id }}__window-image-frame">
+            {{
+              section.settings.window_image
+              | image_url: width: 1500
+              | image_tag: loading: 'lazy', widths: '375, 550, 750, 1100, 1500'
+            }}
+            <div class="waitlist-{{ section.id }}__window-image-slot">
+              {%- if section.settings.heading != blank -%}
+                <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
+                  {{ section.settings.heading }}
+                </h1>
+              {%- endif -%}
 
-          {%- if section.settings.heading != blank -%}
-            <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
-              {{ section.settings.heading }}
-            </h1>
-          {%- endif -%}
+              <div class="waitlist-{{ section.id }}__form-wrapper">
+                <div class="{{ section.settings.klaviyo_form_class }}"></div>
+              </div>
 
-          <div class="waitlist-{{ section.id }}__form-wrapper">
-            <div class="{{ section.settings.klaviyo_form_class }}"></div>
-          </div>
-
-          {%- if section.settings.subheading != blank -%}
-            <div class="waitlist-{{ section.id }}__subheading rte">
-              {{ section.settings.subheading }}
+              {%- if section.settings.subheading != blank -%}
+                <div class="waitlist-{{ section.id }}__subheading rte">
+                  {{ section.settings.subheading }}
+                </div>
+              {%- endif -%}
             </div>
-          {%- endif -%}
-        </div>
-        <div class="waitlist-{{ section.id }}__window-sill" aria-hidden="true"></div>
+          </div>
+        {%- else -%}
+          <div class="waitlist-{{ section.id }}__window-arch" aria-hidden="true">
+            <span class="waitlist-{{ section.id }}__window-mullion waitlist-{{ section.id }}__window-mullion--left"></span>
+            <span class="waitlist-{{ section.id }}__window-mullion waitlist-{{ section.id }}__window-mullion--center"></span>
+            <span class="waitlist-{{ section.id }}__window-mullion waitlist-{{ section.id }}__window-mullion--right"></span>
+          </div>
+          <div class="waitlist-{{ section.id }}__window-body">
+            <div class="waitlist-{{ section.id }}__window-transom" aria-hidden="true"></div>
+
+            {%- if section.settings.heading != blank -%}
+              <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
+                {{ section.settings.heading }}
+              </h1>
+            {%- endif -%}
+
+            <div class="waitlist-{{ section.id }}__form-wrapper">
+              <div class="{{ section.settings.klaviyo_form_class }}"></div>
+            </div>
+
+            {%- if section.settings.subheading != blank -%}
+              <div class="waitlist-{{ section.id }}__subheading rte">
+                {{ section.settings.subheading }}
+              </div>
+            {%- endif -%}
+          </div>
+          <div class="waitlist-{{ section.id }}__window-sill" aria-hidden="true"></div>
+        {%- endif -%}
       </div>
     {%- endif -%}
 
@@ -284,18 +337,65 @@
     },
     {
       "type": "paragraph",
-      "content": "The signup form is framed by an arched window with tinted glass."
+      "content": "The signup form is framed by an arched window. Upload your own window graphic below to replace the built-in CSS window, or leave it blank to keep the tinted-glass version."
+    },
+    {
+      "type": "image_picker",
+      "id": "window_image",
+      "label": "Window image",
+      "info": "A PNG with a transparent center panel works best -- the form renders inside that opening."
+    },
+    {
+      "type": "range",
+      "id": "window_image_slot_top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Form position: top",
+      "info": "Nudge these 4 values until the form lines up with the clear opening in your window image.",
+      "default": 37
+    },
+    {
+      "type": "range",
+      "id": "window_image_slot_left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Form position: left",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "window_image_slot_width",
+      "min": 10,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Form position: width",
+      "default": 52
+    },
+    {
+      "type": "range",
+      "id": "window_image_slot_height",
+      "min": 10,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Form position: height",
+      "default": 49
     },
     {
       "type": "color",
       "id": "window_frame_color",
-      "label": "Window frame color",
+      "label": "Window frame color (used when no window image is set)",
       "default": "#7D4A52"
     },
     {
       "type": "color",
       "id": "window_glass_color",
-      "label": "Glass color",
+      "label": "Glass color (used when no window image is set)",
       "default": "#F7CAD0"
     },
     {
@@ -305,7 +405,7 @@
       "max": 70,
       "step": 5,
       "unit": "%",
-      "label": "Glass opacity",
+      "label": "Glass opacity (used when no window image is set)",
       "default": 30
     },
     {
