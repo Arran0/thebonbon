@@ -177,11 +177,32 @@
     line-height: 1.3;
   }
 
+  {% if section.settings.zoom_enable %}
+    @keyframes waitlist-{{ section.id }}-zoom-in {
+      from {
+        transform: scale(1);
+      }
+      to {
+        transform: scale({{ section.settings.zoom_end_scale | divided_by: 100.0 }});
+      }
+    }
+  {% endif %}
+
   .waitlist-{{ section.id }}__window {
     position: relative;
     width: 100%;
     max-width: 62rem;
     container-type: inline-size;
+    transform-origin: center center;
+    {% if section.settings.zoom_enable %}
+      animation: waitlist-{{ section.id }}-zoom-in {{ section.settings.zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    {% endif %}
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .waitlist-{{ section.id }}__window {
+      animation: none;
+    }
   }
 
   .waitlist-{{ section.id }}__window-image-frame {
@@ -990,6 +1011,41 @@
       "unit": "%",
       "label": "Glass opacity (used when no window image is set)",
       "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Entrance animation"
+    },
+    {
+      "type": "paragraph",
+      "content": "The window (with the card, heading and form riding along inside it) starts at the size set above and grows to the size below, like it's moving toward the viewer."
+    },
+    {
+      "type": "checkbox",
+      "id": "zoom_enable",
+      "label": "Animate window zooming in on load",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "zoom_end_scale",
+      "min": 100,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "End size",
+      "info": "100% = no growth. 115% means the window (and card) end up 15% larger than the size set elsewhere in this section.",
+      "default": 115
+    },
+    {
+      "type": "range",
+      "id": "zoom_duration",
+      "min": 400,
+      "max": 3000,
+      "step": 100,
+      "unit": "ms",
+      "label": "Animation duration",
+      "default": 1200
     },
     {
       "type": "header",
