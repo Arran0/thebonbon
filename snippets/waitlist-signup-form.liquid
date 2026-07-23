@@ -10,40 +10,39 @@
     data-klaviyo-company-id="{{ section.settings.klaviyo_public_api_key }}"
     data-klaviyo-list-id="{{ section.settings.klaviyo_list_id }}"
   >
-    <div data-waitlist-fields>
-      <div class="field waitlist-{{ section.id }}__field-pill">
-        <span class="waitlist-{{ section.id }}__field-badge" aria-hidden="true">Name</span>
+    <div class="waitlist-{{ section.id }}__fields" data-waitlist-fields>
+      <label class="waitlist-{{ section.id }}__field" for="WaitlistName-{{ section.id }}">
+        <span class="waitlist-{{ section.id }}__field-badge">Name</span>
         <input
           type="text"
           id="WaitlistName-{{ section.id }}"
           class="field__input"
           data-waitlist-name
           autocomplete="given-name"
+          placeholder="Your first name"
         >
-        <label class="field__label" for="WaitlistName-{{ section.id }}">First name</label>
-      </div>
+      </label>
 
-      <div class="waitlist-{{ section.id }}__field-row">
-        <div class="field">
-          <span class="waitlist-{{ section.id }}__field-badge" aria-hidden="true">Email</span>
-          <input
-            type="email"
-            id="WaitlistEmail-{{ section.id }}"
-            class="field__input"
-            data-waitlist-email
-            autocomplete="email"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            required
-            aria-required="true"
-          >
-          <label class="field__label" for="WaitlistEmail-{{ section.id }}">Email</label>
-        </div>
-        <button type="submit" class="waitlist-{{ section.id }}__form-button">
-          Join
-        </button>
-      </div>
+      <label class="waitlist-{{ section.id }}__field" for="WaitlistEmail-{{ section.id }}">
+        <span class="waitlist-{{ section.id }}__field-badge">Email</span>
+        <input
+          type="email"
+          id="WaitlistEmail-{{ section.id }}"
+          class="field__input"
+          data-waitlist-email
+          autocomplete="email"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          required
+          aria-required="true"
+          placeholder="you@email.com"
+        >
+      </label>
+
+      <button type="submit" class="waitlist-{{ section.id }}__form-button">
+        Join
+      </button>
 
       <small class="waitlist-{{ section.id }}__form-error" data-waitlist-error hidden></small>
     </div>

@@ -60,67 +60,64 @@
     height: auto;
   }
 
-  /* Font size 1 of 2: everything on this page is either this heading size... */
+  /* Heading: bold, shiny dark pink with a slow foil sheen that
+     glides across once, then rests, on a 10s loop. */
   .waitlist-{{ section.id }}__heading {
-    margin: 0;
-    font-size: 1.7rem;
+    margin: 0.3rem 0 0.7rem;
+    font-size: 2.6rem;
+    line-height: 1.1;
     font-weight: 700;
+    letter-spacing: 0.01em;
+    color: {{ section.settings.heading_color }};
     background-image: linear-gradient(
-      100deg,
-      {{ section.settings.heading_color }} 45%,
-      {{ section.settings.heading_color | color_lighten: 40 }} 50%,
-      {{ section.settings.heading_color }} 55%
+      105deg,
+      {{ section.settings.heading_color }} 0%,
+      {{ section.settings.heading_color }} 38%,
+      {{ section.settings.heading_color | color_lighten: 32 }} 47%,
+      #fff4f9 50%,
+      {{ section.settings.heading_color | color_lighten: 32 }} 53%,
+      {{ section.settings.heading_color }} 62%,
+      {{ section.settings.heading_color }} 100%
     );
-    background-size: 300% 100%;
-    background-position: 100% 0;
+    background-size: 220% 100%;
+    background-repeat: no-repeat;
     -webkit-background-clip: text;
     background-clip: text;
+    -webkit-text-fill-color: transparent;
     color: transparent;
-    animation: waitlist-{{ section.id }}-shine 4s ease-in-out infinite;
+    filter: drop-shadow(0 2px 6px {{ section.settings.heading_color | color_modify: 'alpha', 0.32 }});
+    animation: waitlist-{{ section.id }}-sheen 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
-  @keyframes waitlist-{{ section.id }}-shine {
-    0%, 15% {
-      background-position: 100% 0;
+  @keyframes waitlist-{{ section.id }}-sheen {
+    0% {
+      background-position: 160% 0;
     }
-    85%, 100% {
-      background-position: -100% 0;
+    28%, 100% {
+      background-position: -60% 0;
     }
   }
 
-  .waitlist-{{ section.id }}__heading-type::after {
-    content: '';
-    display: inline-block;
-    width: 0.08em;
-    margin-left: 0.05em;
-    height: 1em;
-    vertical-align: -0.1em;
-    background: currentColor;
-    animation: waitlist-{{ section.id }}-cursor 0.8s step-end infinite;
-  }
-
-  @keyframes waitlist-{{ section.id }}-cursor {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0;
+  @media (prefers-reduced-motion: reduce) {
+    .waitlist-{{ section.id }}__heading {
+      animation: none;
+      background-position: -60% 0;
     }
   }
 
   @media screen and (min-width: 750px) {
     .waitlist-{{ section.id }}__heading {
-      font-size: 2rem;
+      font-size: 3rem;
     }
   }
 
-  /* ...or font size 2 of 2: the shared body copy size below. */
   .waitlist-{{ section.id }}__subheading {
     margin: 1.25rem 0 0;
-    padding: 0.6rem 1.25rem;
+    padding: 0.6rem 1.4rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.65);
     color: {{ section.settings.window_frame_color }};
+    font-weight: 700;
     white-space: nowrap;
     max-width: 100%;
     overflow-x: auto;
@@ -156,10 +153,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 0.85rem;
     overflow: auto;
-    padding: 0.5rem 0.5rem 1rem;
+    padding: 0.5rem;
   }
 
   .waitlist-{{ section.id }}__window-arch {
@@ -241,65 +238,71 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 17rem;
+    max-width: 21rem;
   }
 
-  .waitlist-{{ section.id }}__form-wrapper .waitlist-signup-form {
+  .waitlist-{{ section.id }}__form-wrapper .waitlist-signup-form,
+  .waitlist-{{ section.id }}__fields {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     width: 100%;
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
 
-  .waitlist-{{ section.id }}__field-pill,
-  .waitlist-{{ section.id }}__field-row {
+  /* Each field is a soft pink glass pill holding a white label chip + input. */
+  .waitlist-{{ section.id }}__field {
     box-sizing: border-box;
     display: flex;
     align-items: center;
+    gap: 0.55rem;
     width: 100%;
-    height: 3rem;
+    height: 3.2rem;
+    padding: 0 0.45rem 0 0.45rem;
     border-radius: 999px;
-    border: 2px solid {{ section.settings.window_frame_color }};
-    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.9 }};
-    box-shadow: 0 4px 10px rgba(125, 74, 82, 0.18);
-    overflow: hidden;
+    border: 1.5px solid {{ section.settings.window_frame_color | color_modify: 'alpha', 0.7 }};
+    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.55 }};
+    box-shadow:
+      0 6px 16px rgba(125, 74, 82, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
   }
 
-  .waitlist-{{ section.id }}__field-row {
-    margin-top: 0.6rem;
+  .waitlist-{{ section.id }}__field:focus-within {
+    border-color: {{ section.settings.window_frame_color }};
+    box-shadow:
+      0 8px 20px rgba(125, 74, 82, 0.26),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
 
-  .waitlist-{{ section.id }}__form-wrapper .field {
-    position: relative;
-    flex: 1;
-    min-width: 0;
-    width: auto;
-    height: 100%;
-    display: flex;
-    align-items: center;
-  }
-
+  /* White translucent pill label ("Name" / "Email") with pink text. */
   .waitlist-{{ section.id }}__field-badge {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    margin-left: 0.3rem;
-    padding: 0.25rem 0.8rem;
+    padding: 0.35rem 0.9rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.82);
     color: {{ section.settings.window_frame_color }};
     font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: 0.01em;
     white-space: nowrap;
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field__input {
+    flex: 1;
+    min-width: 0;
     width: 100%;
     height: 100%;
     border: none;
     background: transparent;
-    padding: 0 1rem;
+    padding: 0 0.6rem 0 0.2rem;
     margin: 0;
     box-shadow: none;
+    font-size: 1.4rem;
     color: {{ section.settings.window_frame_color }};
   }
 
@@ -309,7 +312,46 @@
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field__input::placeholder {
-    color: {{ section.settings.window_frame_color | color_modify: 'alpha', 0.55 }};
+    color: {{ section.settings.window_frame_color | color_modify: 'alpha', 0.5 }};
+  }
+
+  /* Standalone, centered Join button. */
+  .waitlist-{{ section.id }}__form-button {
+    box-sizing: border-box;
+    align-self: center;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    margin: 0.35rem 0 0;
+    padding: 0.75rem 2.6rem;
+    border: none;
+    border-radius: 999px;
+    background: {{ section.settings.window_frame_color }};
+    color: {{ section.settings.window_glass_color }};
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(125, 74, 82, 0.32);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  }
+
+  .waitlist-{{ section.id }}__form-button::before,
+  .waitlist-{{ section.id }}__form-button::after {
+    content: none;
+  }
+
+  .waitlist-{{ section.id }}__form-button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 11px 24px rgba(125, 74, 82, 0.4);
+  }
+
+  .waitlist-{{ section.id }}__form-button:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(125, 74, 82, 0.32);
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field__label {
@@ -324,34 +366,10 @@
     border: 0;
   }
 
-  .waitlist-{{ section.id }}__form-button {
-    box-sizing: border-box;
-    flex: 0 0 auto;
-    width: auto;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    margin: 0;
-    padding: 0 1.4rem;
-    border: none;
-    border-radius: 0 999px 999px 0;
-    background: {{ section.settings.window_frame_color }};
-    color: {{ section.settings.window_glass_color }};
-    font-weight: 700;
-    font-size: 1.5rem;
-    line-height: 1;
-    letter-spacing: 0.02rem;
-    box-shadow: none;
-  }
-
-  .waitlist-{{ section.id }}__form-button::before,
-  .waitlist-{{ section.id }}__form-button::after {
-    content: none;
-  }
-
   .waitlist-{{ section.id }}__form-error {
     margin-top: 0.5rem;
     text-align: center;
+    color: {{ section.settings.window_frame_color }};
   }
 
   .waitlist-{{ section.id }}__form-error:not([hidden]) {
@@ -362,13 +380,13 @@
     box-sizing: border-box;
     gap: 0.5rem;
     width: 100%;
-    height: 3rem;
     margin: 0;
-    padding: 0 1.25rem;
+    padding: 0.8rem 1.4rem;
     border-radius: 999px;
-    border: 2px solid {{ section.settings.window_frame_color }};
-    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.9 }};
+    border: 1.5px solid {{ section.settings.window_frame_color }};
+    background: rgba(255, 255, 255, 0.75);
     color: {{ section.settings.window_frame_color }};
+    font-weight: 700;
   }
 
   .waitlist-{{ section.id }}__form-success:not([hidden]) {
@@ -378,8 +396,8 @@
   }
 
   .waitlist-{{ section.id }}__form-success svg {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1.2rem;
+    height: 1.2rem;
     flex-shrink: 0;
   }
 
@@ -417,6 +435,12 @@
       </div>
     {%- endif -%}
 
+    {%- if section.settings.heading != blank -%}
+      <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
+        {{ section.settings.heading }}
+      </h1>
+    {%- endif -%}
+
     {%- if section.settings.klaviyo_form_class != blank -%}
       <div class="waitlist-{{ section.id }}__window{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
         {%- if section.settings.window_image != blank -%}
@@ -427,16 +451,6 @@
               | image_tag: loading: 'lazy', widths: '375, 550, 750, 1100, 1500'
             }}
             <div class="waitlist-{{ section.id }}__window-image-slot">
-              {%- if section.settings.heading != blank -%}
-                <h1 class="waitlist-{{ section.id }}__heading" aria-label="{{ section.settings.heading | strip_html | escape }}">
-                  <span
-                    class="waitlist-{{ section.id }}__heading-type"
-                    aria-hidden="true"
-                    data-typing-text="{{ section.settings.heading | strip_html | escape }}"
-                  ></span>
-                </h1>
-              {%- endif -%}
-
               {%- render 'waitlist-signup-form', section: section -%}
             </div>
           </div>
@@ -448,16 +462,6 @@
           </div>
           <div class="waitlist-{{ section.id }}__window-body">
             <div class="waitlist-{{ section.id }}__window-transom" aria-hidden="true"></div>
-
-            {%- if section.settings.heading != blank -%}
-              <h1 class="waitlist-{{ section.id }}__heading" aria-label="{{ section.settings.heading | strip_html | escape }}">
-                <span
-                  class="waitlist-{{ section.id }}__heading-type"
-                  aria-hidden="true"
-                  data-typing-text="{{ section.settings.heading | strip_html | escape }}"
-                ></span>
-              </h1>
-            {%- endif -%}
 
             {%- render 'waitlist-signup-form', section: section -%}
           </div>
@@ -482,7 +486,6 @@
 </div>
 
 <script src="{{ 'waitlist-signup-form.js' | asset_url }}" defer="defer"></script>
-<script src="{{ 'waitlist-heading-type.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
