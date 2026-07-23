@@ -41,13 +41,13 @@
     position: relative;
     z-index: 2;
     width: 100%;
-    max-width: 44rem;
+    max-width: 54rem;
     margin: 0 auto;
     text-align: {{ section.settings.content_alignment }};
     display: flex;
     flex-direction: column;
     align-items: {% if section.settings.content_alignment == 'left' %}flex-start{% elsif section.settings.content_alignment == 'right' %}flex-end{% else %}center{% endif %};
-    gap: 1.5rem;
+    gap: 1.25rem;
     padding: 0 1.5rem;
   }
 
@@ -57,10 +57,19 @@
     height: auto;
   }
 
+  /* Font size 1 of 2: everything on this page is either this heading size... */
   .waitlist-{{ section.id }}__heading {
     margin: 0;
+    font-size: 1.7rem;
   }
 
+  @media screen and (min-width: 750px) {
+    .waitlist-{{ section.id }}__heading {
+      font-size: 2rem;
+    }
+  }
+
+  /* ...or font size 2 of 2: the shared body copy size below. */
   .waitlist-{{ section.id }}__subheading {
     margin: 0;
   }
@@ -68,7 +77,7 @@
   .waitlist-{{ section.id }}__window {
     position: relative;
     width: 100%;
-    max-width: 23rem;
+    max-width: 46rem;
   }
 
   .waitlist-{{ section.id }}__window-arch {
@@ -109,6 +118,10 @@
 
   .waitlist-{{ section.id }}__window-body {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
     border: 7px solid {{ section.settings.window_frame_color }};
     border-top: none;
     border-radius: 0 0 16px 16px;
@@ -118,7 +131,7 @@
     box-shadow:
       inset 0 0 22px rgba(255, 255, 255, 0.35),
       0 20px 32px -14px rgba(80, 50, 40, 0.35);
-    padding: 2rem 1.5rem 1.75rem;
+    padding: 2rem 2rem 1.75rem;
   }
 
   .waitlist-{{ section.id }}__window-transom {
@@ -144,6 +157,7 @@
     position: relative;
     z-index: 1;
     width: 100%;
+    max-width: 19rem;
   }
 {%- endstyle -%}
 
@@ -173,22 +187,6 @@
       </div>
     {%- endif -%}
 
-    {%- if section.settings.heading != blank -%}
-      <h1
-        class="waitlist-{{ section.id }}__heading inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-      >
-        {{ section.settings.heading }}
-      </h1>
-    {%- endif -%}
-
-    {%- if section.settings.subheading != blank -%}
-      <div
-        class="waitlist-{{ section.id }}__subheading rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-      >
-        {{ section.settings.subheading }}
-      </div>
-    {%- endif -%}
-
     {%- if section.settings.klaviyo_form_class != blank -%}
       <div class="waitlist-{{ section.id }}__window{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
         <div class="waitlist-{{ section.id }}__window-arch" aria-hidden="true">
@@ -198,9 +196,22 @@
         </div>
         <div class="waitlist-{{ section.id }}__window-body">
           <div class="waitlist-{{ section.id }}__window-transom" aria-hidden="true"></div>
+
+          {%- if section.settings.heading != blank -%}
+            <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
+              {{ section.settings.heading }}
+            </h1>
+          {%- endif -%}
+
           <div class="waitlist-{{ section.id }}__form-wrapper">
             <div class="{{ section.settings.klaviyo_form_class }}"></div>
           </div>
+
+          {%- if section.settings.subheading != blank -%}
+            <div class="waitlist-{{ section.id }}__subheading rte">
+              {{ section.settings.subheading }}
+            </div>
+          {%- endif -%}
         </div>
         <div class="waitlist-{{ section.id }}__window-sill" aria-hidden="true"></div>
       </div>
@@ -227,26 +238,13 @@
     {
       "type": "inline_richtext",
       "id": "heading",
-      "label": "Heading",
+      "label": "Heading (shown inside the window)",
       "default": "Save your spot!"
-    },
-    {
-      "type": "select",
-      "id": "heading_size",
-      "options": [
-        { "value": "h2", "label": "Small" },
-        { "value": "h1", "label": "Medium" },
-        { "value": "h0", "label": "Large" },
-        { "value": "hxl", "label": "Extra large" },
-        { "value": "hxxl", "label": "Extra extra large" }
-      ],
-      "default": "hxl",
-      "label": "Heading size"
     },
     {
       "type": "richtext",
       "id": "subheading",
-      "label": "Subheading",
+      "label": "Subheading (shown inside the window, below the form)",
       "default": "<p>Launch offers, goodies and exclusive deals for you 🎀</p>"
     },
     {
@@ -256,7 +254,8 @@
     {
       "type": "image_picker",
       "id": "logo",
-      "label": "Logo image"
+      "label": "Logo image",
+      "info": "Choose your logo file here -- it renders above the window."
     },
     {
       "type": "range",
@@ -276,7 +275,7 @@
       "type": "text",
       "id": "klaviyo_form_class",
       "label": "Klaviyo form embed class",
-      "info": "The CSS class Klaviyo gave your embedded form (e.g. klaviyo-form-SYVDuv). Find it under Klaviyo > Sign-up Forms > your form > Embed code.",
+      "info": "The CSS class Klaviyo gave your embedded form (e.g. klaviyo-form-SYVDuv). Find it under Klaviyo > Sign-up Forms > your form > Embed code. Field width/colors/fonts for the form itself are set inside Klaviyo's own form editor.",
       "default": "klaviyo-form-SYVDuv"
     },
     {
@@ -285,19 +284,19 @@
     },
     {
       "type": "paragraph",
-      "content": "The signup form is framed by an arched window with tinted glass. Klaviyo's own form design (colors, fonts) is set separately in Klaviyo."
+      "content": "The signup form is framed by an arched window with tinted glass."
     },
     {
       "type": "color",
       "id": "window_frame_color",
       "label": "Window frame color",
-      "default": "#F5E9DC"
+      "default": "#7D4A52"
     },
     {
       "type": "color",
       "id": "window_glass_color",
       "label": "Glass color",
-      "default": "#F8BBD0"
+      "default": "#F7CAD0"
     },
     {
       "type": "range",
@@ -322,7 +321,7 @@
       "type": "color",
       "id": "overlay_color",
       "label": "Overlay color",
-      "default": "#503228"
+      "default": "#7D4A52"
     },
     {
       "type": "range",
@@ -363,7 +362,7 @@
       "type": "color_scheme",
       "id": "color_scheme",
       "label": "Color scheme",
-      "default": "scheme-1"
+      "default": "scheme-6"
     },
     {
       "type": "header",
