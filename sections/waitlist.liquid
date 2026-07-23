@@ -47,8 +47,11 @@
     display: flex;
     flex-direction: column;
     align-items: {% if section.settings.content_alignment == 'left' %}flex-start{% elsif section.settings.content_alignment == 'right' %}flex-end{% else %}center{% endif %};
-    gap: 1.25rem;
     padding: 0 1.5rem;
+  }
+
+  .waitlist-{{ section.id }}__logo-wrapper {
+    margin-bottom: 0.4rem;
   }
 
   .waitlist-{{ section.id }}__logo {
@@ -71,7 +74,8 @@
 
   /* ...or font size 2 of 2: the shared body copy size below. */
   .waitlist-{{ section.id }}__subheading {
-    margin: 0;
+    margin: 1.25rem 0 0;
+    max-width: 34rem;
   }
 
   .waitlist-{{ section.id }}__window {
@@ -185,22 +189,79 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 19rem;
+    max-width: 17rem;
   }
 
   .waitlist-{{ section.id }}__form-wrapper .waitlist-signup-form {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 0.6rem;
+    width: 100%;
+    height: 2.6rem;
+    border-radius: 999px;
+    border: 1.5px solid {{ section.settings.window_frame_color }};
+    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.85 }};
+    box-shadow: 0 4px 10px rgba(125, 74, 82, 0.18);
+    overflow: hidden;
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+
+  .waitlist-{{ section.id }}__form-wrapper .field__input {
     width: 100%;
+    height: 2.6rem;
+    border: none;
+    background: transparent;
+    padding: 0 0 0 1.1rem;
+    margin: 0;
+    box-shadow: none;
+    color: {{ section.settings.window_frame_color }};
+  }
+
+  .waitlist-{{ section.id }}__form-wrapper .field__input:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .waitlist-{{ section.id }}__form-wrapper .field__input::placeholder {
+    color: {{ section.settings.window_frame_color | color_modify: 'alpha', 0.65 }};
+  }
+
+  .waitlist-{{ section.id }}__form-wrapper .field__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .waitlist-{{ section.id }}__form-button {
-    width: 100%;
+    flex: 0 0 auto;
+    height: calc(2.6rem - 4px);
+    margin: 2px;
+    padding: 0 1.3rem;
+    border: none;
+    border-radius: 999px;
+    background: {{ section.settings.window_frame_color }};
+    color: {{ section.settings.window_glass_color }};
+    font-weight: 600;
+    letter-spacing: 0.02rem;
+    box-shadow: none;
+  }
+
+  .waitlist-{{ section.id }}__form-error {
+    display: block;
+    margin-top: 0.5rem;
+    text-align: center;
   }
 
   .waitlist-{{ section.id }}__form-success {
@@ -208,7 +269,14 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    width: 100%;
+    height: 2.6rem;
     margin: 0;
+    padding: 0 1.25rem;
+    border-radius: 999px;
+    border: 1.5px solid {{ section.settings.window_frame_color }};
+    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.85 }};
+    color: {{ section.settings.window_frame_color }};
   }
 
   .waitlist-{{ section.id }}__klaviyo-hidden {
@@ -236,7 +304,7 @@
       {%- liquid
         assign logo_class = 'waitlist-' | append: section.id | append: '__logo'
       -%}
-      <div{% if settings.animations_reveal_on_scroll %} class="scroll-trigger animate--fade-in"{% endif %}>
+      <div class="waitlist-{{ section.id }}__logo-wrapper{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
         {{
           section.settings.logo
           | image_url: width: 2000
@@ -262,12 +330,6 @@
               {%- endif -%}
 
               {%- render 'waitlist-signup-form', section: section -%}
-
-              {%- if section.settings.subheading != blank -%}
-                <div class="waitlist-{{ section.id }}__subheading rte">
-                  {{ section.settings.subheading }}
-                </div>
-              {%- endif -%}
             </div>
           </div>
         {%- else -%}
@@ -286,15 +348,15 @@
             {%- endif -%}
 
             {%- render 'waitlist-signup-form', section: section -%}
-
-            {%- if section.settings.subheading != blank -%}
-              <div class="waitlist-{{ section.id }}__subheading rte">
-                {{ section.settings.subheading }}
-              </div>
-            {%- endif -%}
           </div>
           <div class="waitlist-{{ section.id }}__window-sill" aria-hidden="true"></div>
         {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.subheading != blank -%}
+      <div class="waitlist-{{ section.id }}__subheading rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        {{ section.settings.subheading }}
       </div>
     {%- endif -%}
 
@@ -325,7 +387,7 @@
     {
       "type": "richtext",
       "id": "subheading",
-      "label": "Subheading (shown inside the window, below the form)",
+      "label": "Subheading (shown below the window)",
       "default": "<p>Launch offers, goodies and exclusive deals for you 🎀</p>"
     },
     {
