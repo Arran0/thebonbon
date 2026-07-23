@@ -65,9 +65,85 @@
     margin: 0;
   }
 
-  .waitlist-{{ section.id }}__form-wrapper {
+  .waitlist-{{ section.id }}__window {
+    position: relative;
     width: 100%;
-    max-width: 26rem;
+    max-width: 23rem;
+  }
+
+  .waitlist-{{ section.id }}__window-arch {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    overflow: hidden;
+    border: 7px solid {{ section.settings.window_frame_color }};
+    border-bottom: none;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    background: {{ section.settings.window_glass_color | color_modify: 'alpha', section.settings.window_glass_opacity | divided_by: 100.0 }};
+    backdrop-filter: blur(7px) saturate(115%);
+    -webkit-backdrop-filter: blur(7px) saturate(115%);
+    box-shadow: inset 0 0 22px rgba(255, 255, 255, 0.45);
+  }
+
+  .waitlist-{{ section.id }}__window-mullion {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    height: 100%;
+    background: {{ section.settings.window_frame_color }};
+    transform-origin: bottom center;
+  }
+
+  .waitlist-{{ section.id }}__window-mullion--left {
+    transform: translateX(-50%) rotate(-30deg);
+  }
+
+  .waitlist-{{ section.id }}__window-mullion--center {
+    transform: translateX(-50%);
+  }
+
+  .waitlist-{{ section.id }}__window-mullion--right {
+    transform: translateX(-50%) rotate(30deg);
+  }
+
+  .waitlist-{{ section.id }}__window-body {
+    position: relative;
+    border: 7px solid {{ section.settings.window_frame_color }};
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    background: {{ section.settings.window_glass_color | color_modify: 'alpha', section.settings.window_glass_opacity | divided_by: 100.0 }};
+    backdrop-filter: blur(7px) saturate(115%);
+    -webkit-backdrop-filter: blur(7px) saturate(115%);
+    box-shadow:
+      inset 0 0 22px rgba(255, 255, 255, 0.35),
+      0 20px 32px -14px rgba(80, 50, 40, 0.35);
+    padding: 2rem 1.5rem 1.75rem;
+  }
+
+  .waitlist-{{ section.id }}__window-transom {
+    position: absolute;
+    top: 0;
+    left: -7px;
+    right: -7px;
+    height: 6px;
+    background: {{ section.settings.window_frame_color }};
+  }
+
+  .waitlist-{{ section.id }}__window-sill {
+    width: 112%;
+    height: 8px;
+    margin: 0 auto;
+    transform: translateX(-5.4%);
+    background: {{ section.settings.window_frame_color }};
+    border-radius: 2px;
+    box-shadow: 0 5px 10px rgba(80, 50, 40, 0.25);
+  }
+
+  .waitlist-{{ section.id }}__form-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
   }
 {%- endstyle -%}
 
@@ -114,8 +190,19 @@
     {%- endif -%}
 
     {%- if section.settings.klaviyo_form_class != blank -%}
-      <div class="waitlist-{{ section.id }}__form-wrapper{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-        <div class="{{ section.settings.klaviyo_form_class }}"></div>
+      <div class="waitlist-{{ section.id }}__window{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        <div class="waitlist-{{ section.id }}__window-arch" aria-hidden="true">
+          <span class="waitlist-{{ section.id }}__window-mullion waitlist-{{ section.id }}__window-mullion--left"></span>
+          <span class="waitlist-{{ section.id }}__window-mullion waitlist-{{ section.id }}__window-mullion--center"></span>
+          <span class="waitlist-{{ section.id }}__window-mullion waitlist-{{ section.id }}__window-mullion--right"></span>
+        </div>
+        <div class="waitlist-{{ section.id }}__window-body">
+          <div class="waitlist-{{ section.id }}__window-transom" aria-hidden="true"></div>
+          <div class="waitlist-{{ section.id }}__form-wrapper">
+            <div class="{{ section.settings.klaviyo_form_class }}"></div>
+          </div>
+        </div>
+        <div class="waitlist-{{ section.id }}__window-sill" aria-hidden="true"></div>
       </div>
     {%- endif -%}
 
@@ -191,6 +278,36 @@
       "label": "Klaviyo form embed class",
       "info": "The CSS class Klaviyo gave your embedded form (e.g. klaviyo-form-SYVDuv). Find it under Klaviyo > Sign-up Forms > your form > Embed code.",
       "default": "klaviyo-form-SYVDuv"
+    },
+    {
+      "type": "header",
+      "content": "Arched window"
+    },
+    {
+      "type": "paragraph",
+      "content": "The signup form is framed by an arched window with tinted glass. Klaviyo's own form design (colors, fonts) is set separately in Klaviyo."
+    },
+    {
+      "type": "color",
+      "id": "window_frame_color",
+      "label": "Window frame color",
+      "default": "#F5E9DC"
+    },
+    {
+      "type": "color",
+      "id": "window_glass_color",
+      "label": "Glass color",
+      "default": "#F8BBD0"
+    },
+    {
+      "type": "range",
+      "id": "window_glass_opacity",
+      "min": 10,
+      "max": 70,
+      "step": 5,
+      "unit": "%",
+      "label": "Glass opacity",
+      "default": 30
     },
     {
       "type": "header",
