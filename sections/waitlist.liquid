@@ -53,7 +53,7 @@
 
   .waitlist-{{ section.id }}__logo {
     width: {{ section.settings.logo_width }}px;
-    max-width: 60%;
+    max-width: 90%;
     height: auto;
   }
 
@@ -239,8 +239,8 @@
       <div{% if settings.animations_reveal_on_scroll %} class="scroll-trigger animate--fade-in"{% endif %}>
         {{
           section.settings.logo
-          | image_url: width: 600
-          | image_tag: class: logo_class, widths: '150, 300, 450, 600'
+          | image_url: width: 2000
+          | image_tag: class: logo_class, widths: '150, 300, 600, 1000, 1500, 2000'
         }}
       </div>
     {%- endif -%}
@@ -342,7 +342,7 @@
       "type": "range",
       "id": "logo_width",
       "min": 50,
-      "max": 300,
+      "max": 1000,
       "step": 10,
       "unit": "px",
       "label": "Logo width",
