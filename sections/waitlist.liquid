@@ -41,7 +41,7 @@
     position: relative;
     z-index: 2;
     width: 100%;
-    max-width: 54rem;
+    max-width: 68rem;
     margin: 0 auto;
     text-align: {{ section.settings.content_alignment }};
     display: flex;
@@ -77,7 +77,7 @@
   .waitlist-{{ section.id }}__window {
     position: relative;
     width: 100%;
-    max-width: 46rem;
+    max-width: 62rem;
   }
 
   .waitlist-{{ section.id }}__window-image-frame {
@@ -100,10 +100,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 1.1rem;
+    justify-content: flex-end;
+    gap: 0.85rem;
     overflow: auto;
-    padding: 0.5rem;
+    padding: 0.5rem 0.5rem 1rem;
   }
 
   .waitlist-{{ section.id }}__window-arch {
@@ -147,6 +147,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-end;
     gap: 1.25rem;
     border: 7px solid {{ section.settings.window_frame_color }};
     border-top: none;
@@ -158,6 +159,7 @@
       inset 0 0 22px rgba(255, 255, 255, 0.35),
       0 20px 32px -14px rgba(80, 50, 40, 0.35);
     padding: 2rem 2rem 1.75rem;
+    min-height: 16rem;
   }
 
   .waitlist-{{ section.id }}__window-transom {
@@ -185,6 +187,33 @@
     width: 100%;
     max-width: 19rem;
   }
+
+  .waitlist-{{ section.id }}__form-wrapper .waitlist-signup-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .waitlist-{{ section.id }}__form-wrapper .field {
+    width: 100%;
+  }
+
+  .waitlist-{{ section.id }}__form-button {
+    width: 100%;
+  }
+
+  .waitlist-{{ section.id }}__form-success {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .waitlist-{{ section.id }}__klaviyo-hidden {
+    display: none;
+  }
 {%- endstyle -%}
 
 <div class="waitlist-{{ section.id }} color-{{ section.settings.color_scheme }} gradient">
@@ -204,11 +233,14 @@
 
   <div class="waitlist-{{ section.id }}__content page-width page-width--narrow">
     {%- if section.settings.logo != blank -%}
+      {%- liquid
+        assign logo_class = 'waitlist-' | append: section.id | append: '__logo'
+      -%}
       <div{% if settings.animations_reveal_on_scroll %} class="scroll-trigger animate--fade-in"{% endif %}>
         {{
           section.settings.logo
           | image_url: width: 600
-          | image_tag: class: 'waitlist-' | append: section.id | append: '__logo', widths: '150, 300, 450, 600'
+          | image_tag: class: logo_class, widths: '150, 300, 450, 600'
         }}
       </div>
     {%- endif -%}
@@ -229,9 +261,7 @@
                 </h1>
               {%- endif -%}
 
-              <div class="waitlist-{{ section.id }}__form-wrapper">
-                <div class="{{ section.settings.klaviyo_form_class }}"></div>
-              </div>
+              {%- render 'waitlist-signup-form', section: section -%}
 
               {%- if section.settings.subheading != blank -%}
                 <div class="waitlist-{{ section.id }}__subheading rte">
@@ -255,9 +285,7 @@
               </h1>
             {%- endif -%}
 
-            <div class="waitlist-{{ section.id }}__form-wrapper">
-              <div class="{{ section.settings.klaviyo_form_class }}"></div>
-            </div>
+            {%- render 'waitlist-signup-form', section: section -%}
 
             {%- if section.settings.subheading != blank -%}
               <div class="waitlist-{{ section.id }}__subheading rte">
@@ -325,10 +353,14 @@
       "content": "Signup form"
     },
     {
+      "type": "paragraph",
+      "content": "The visible email field and Join button are now built and styled by this theme, not Klaviyo. Submitting adds the visitor as a customer tagged \"waitlist\" with marketing consent, which Klaviyo's Shopify integration syncs automatically."
+    },
+    {
       "type": "text",
       "id": "klaviyo_form_class",
-      "label": "Klaviyo form embed class",
-      "info": "The CSS class Klaviyo gave your embedded form (e.g. klaviyo-form-SYVDuv). Find it under Klaviyo > Sign-up Forms > your form > Embed code. Field width/colors/fonts for the form itself are set inside Klaviyo's own form editor.",
+      "label": "Klaviyo form embed class (kept hidden on the page)",
+      "info": "Optional: your Klaviyo embed (e.g. klaviyo-form-SYVDuv) still renders in the page but is hidden with display:none, in case you want it wired up again later. Leave as-is or clear it to remove it entirely.",
       "default": "klaviyo-form-SYVDuv"
     },
     {
