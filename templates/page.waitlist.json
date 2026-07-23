@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "main": {
+      "type": "waitlist",
+      "settings": {
+        "heading": "Save your spot!",
+        "heading_size": "hxl",
+        "subheading": "<p>Launch offers, goodies and exclusive deals for you 🎀</p>",
+        "logo_width": 150,
+        "klaviyo_form_class": "klaviyo-form-SYVDuv",
+        "overlay_color": "#503228",
+        "overlay_opacity": 40,
+        "min_height": 400,
+        "content_alignment": "center",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

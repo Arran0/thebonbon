@@ -1,0 +1,287 @@
+{%- style -%}
+  .waitlist-{{ section.id }} {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    min-height: {{ section.settings.min_height }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .waitlist-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .waitlist-{{ section.id }}__background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .waitlist-{{ section.id }}__background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .waitlist-{{ section.id }}__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: {{ section.settings.overlay_color }};
+    opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+  }
+
+  .waitlist-{{ section.id }}__content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 44rem;
+    margin: 0 auto;
+    text-align: {{ section.settings.content_alignment }};
+    display: flex;
+    flex-direction: column;
+    align-items: {% if section.settings.content_alignment == 'left' %}flex-start{% elsif section.settings.content_alignment == 'right' %}flex-end{% else %}center{% endif %};
+    gap: 1.5rem;
+    padding: 0 1.5rem;
+  }
+
+  .waitlist-{{ section.id }}__logo {
+    width: {{ section.settings.logo_width }}px;
+    max-width: 60%;
+    height: auto;
+  }
+
+  .waitlist-{{ section.id }}__heading {
+    margin: 0;
+  }
+
+  .waitlist-{{ section.id }}__subheading {
+    margin: 0;
+  }
+
+  .waitlist-{{ section.id }}__form-wrapper {
+    width: 100%;
+    max-width: 26rem;
+  }
+{%- endstyle -%}
+
+<div class="waitlist-{{ section.id }} color-{{ section.settings.color_scheme }} gradient">
+  {%- if section.settings.background_image != blank -%}
+    <div class="waitlist-{{ section.id }}__background">
+      {{
+        section.settings.background_image
+        | image_url: width: 3000
+        | image_tag:
+          loading: 'lazy',
+          widths: '750, 1100, 1500, 2000, 3000',
+          sizes: '100vw'
+      }}
+    </div>
+    <div class="waitlist-{{ section.id }}__overlay"></div>
+  {%- endif -%}
+
+  <div class="waitlist-{{ section.id }}__content page-width page-width--narrow">
+    {%- if section.settings.logo != blank -%}
+      <div{% if settings.animations_reveal_on_scroll %} class="scroll-trigger animate--fade-in"{% endif %}>
+        {{
+          section.settings.logo
+          | image_url: width: 600
+          | image_tag: class: 'waitlist-' | append: section.id | append: '__logo', widths: '150, 300, 450, 600'
+        }}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.heading != blank -%}
+      <h1
+        class="waitlist-{{ section.id }}__heading inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+      >
+        {{ section.settings.heading }}
+      </h1>
+    {%- endif -%}
+
+    {%- if section.settings.subheading != blank -%}
+      <div
+        class="waitlist-{{ section.id }}__subheading rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+      >
+        {{ section.settings.subheading }}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.klaviyo_form_class != blank -%}
+      <div class="waitlist-{{ section.id }}__form-wrapper{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        <div class="{{ section.settings.klaviyo_form_class }}"></div>
+      </div>
+    {%- endif -%}
+
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when '@app' -%}
+          {% render block %}
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Waitlist",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Save your spot!"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" },
+        { "value": "hxl", "label": "Extra large" },
+        { "value": "hxxl", "label": "Extra extra large" }
+      ],
+      "default": "hxl",
+      "label": "Heading size"
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>Launch offers, goodies and exclusive deals for you 🎀</p>"
+    },
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image"
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "min": 50,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "label": "Logo width",
+      "default": 150
+    },
+    {
+      "type": "header",
+      "content": "Signup form"
+    },
+    {
+      "type": "text",
+      "id": "klaviyo_form_class",
+      "label": "Klaviyo form embed class",
+      "info": "The CSS class Klaviyo gave your embedded form (e.g. klaviyo-form-SYVDuv). Find it under Klaviyo > Sign-up Forms > your form > Embed code.",
+      "default": "klaviyo-form-SYVDuv"
+    },
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay color",
+      "default": "#503228"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "min": 200,
+      "max": 800,
+      "step": 20,
+      "unit": "px",
+      "label": "Minimum section height",
+      "default": 400
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center",
+      "label": "Content alignment"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Waitlist"
+    }
+  ]
+}
+{% endschema %}
