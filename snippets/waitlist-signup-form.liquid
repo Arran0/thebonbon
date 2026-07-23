@@ -11,20 +11,19 @@
     data-klaviyo-list-id="{{ section.settings.klaviyo_list_id }}"
   >
     <div class="waitlist-{{ section.id }}__fields" data-waitlist-fields>
-      <label class="waitlist-{{ section.id }}__field" for="WaitlistName-{{ section.id }}">
-        <span class="waitlist-{{ section.id }}__field-badge">Name</span>
+      <div class="waitlist-{{ section.id }}__field">
         <input
           type="text"
           id="WaitlistName-{{ section.id }}"
           class="field__input"
           data-waitlist-name
           autocomplete="given-name"
-          placeholder="Your first name"
+          aria-label="Your name"
+          placeholder="your name here"
         >
-      </label>
+      </div>
 
-      <label class="waitlist-{{ section.id }}__field" for="WaitlistEmail-{{ section.id }}">
-        <span class="waitlist-{{ section.id }}__field-badge">Email</span>
+      <div class="waitlist-{{ section.id }}__field">
         <input
           type="email"
           id="WaitlistEmail-{{ section.id }}"
@@ -36,12 +35,13 @@
           spellcheck="false"
           required
           aria-required="true"
-          placeholder="you@email.com"
+          aria-label="Your email"
+          placeholder="your mail id here"
         >
-      </label>
+      </div>
 
       <button type="submit" class="waitlist-{{ section.id }}__form-button">
-        Join
+        Join Waitlist
       </button>
 
       <small class="waitlist-{{ section.id }}__form-error" data-waitlist-error hidden></small>
