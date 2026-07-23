@@ -194,7 +194,14 @@
 
   .waitlist-{{ section.id }}__form-wrapper .waitlist-signup-form {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .waitlist-{{ section.id }}__field-pill,
+  .waitlist-{{ section.id }}__field-row {
+    display: flex;
     align-items: center;
     width: 100%;
     height: 2.6rem;
@@ -203,6 +210,10 @@
     background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.85 }};
     box-shadow: 0 4px 10px rgba(125, 74, 82, 0.18);
     overflow: hidden;
+  }
+
+  .waitlist-{{ section.id }}__field-row {
+    margin-top: 0.5rem;
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field {
@@ -369,6 +380,8 @@
   </div>
 </div>
 
+<script src="{{ 'waitlist-signup-form.js' | asset_url }}" defer="defer"></script>
+
 {% schema %}
 {
   "name": "Waitlist",
@@ -416,13 +429,27 @@
     },
     {
       "type": "paragraph",
-      "content": "The visible email field and Join button are now built and styled by this theme, not Klaviyo. Submitting adds the visitor as a customer tagged \"waitlist\" with marketing consent, which Klaviyo's Shopify integration syncs automatically."
+      "content": "The visible First name + Email fields and Join button are built and styled by this theme and submit straight to Klaviyo's API using the key and list below."
+    },
+    {
+      "type": "text",
+      "id": "klaviyo_public_api_key",
+      "label": "Klaviyo Public API Key",
+      "info": "Klaviyo > Settings (gear icon) > API Keys > Public API Key.",
+      "default": "Vx3Bbq"
+    },
+    {
+      "type": "text",
+      "id": "klaviyo_list_id",
+      "label": "Klaviyo List ID",
+      "info": "The ID in your list's URL, e.g. klaviyo.com/list/XXXXXX.",
+      "default": "U9Lfmn"
     },
     {
       "type": "text",
       "id": "klaviyo_form_class",
-      "label": "Klaviyo form embed class (kept hidden on the page)",
-      "info": "Optional: your Klaviyo embed (e.g. klaviyo-form-SYVDuv) still renders in the page but is hidden with display:none, in case you want it wired up again later. Leave as-is or clear it to remove it entirely.",
+      "label": "Old Klaviyo form embed class (kept hidden on the page)",
+      "info": "No longer used for submission -- kept hidden with display:none in case you want it back. Clear it to remove entirely.",
       "default": "klaviyo-form-SYVDuv"
     },
     {

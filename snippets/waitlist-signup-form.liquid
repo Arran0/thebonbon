@@ -1,49 +1,58 @@
 {%- comment -%}
-  Renders the waitlist section's own styled email signup form.
+  Renders the waitlist section's own styled name + email signup form.
+  Submits directly to Klaviyo's public client API via waitlist-signup-form.js.
   Expects: section
 {%- endcomment -%}
 
 <div class="waitlist-{{ section.id }}__form-wrapper">
-  {%- form 'customer', class: 'waitlist-signup-form' -%}
-    <input type="hidden" name="contact[tags]" value="waitlist">
-    <input type="hidden" name="contact[accepts_marketing]" value="1">
-    {%- if form.posted_successfully? -%}
-      <p class="waitlist-{{ section.id }}__form-success">
-        {{- 'icon-success.svg' | inline_asset_content -}}
-        You're on the list!
-      </p>
-    {%- else -%}
-      <div class="field field--with-error">
+  <form
+    class="waitlist-signup-form"
+    data-klaviyo-company-id="{{ section.settings.klaviyo_public_api_key }}"
+    data-klaviyo-list-id="{{ section.settings.klaviyo_list_id }}"
+  >
+    <div data-waitlist-fields>
+      <div class="field waitlist-{{ section.id }}__field-pill">
         <input
-          type="email"
-          name="contact[email]"
-          id="WaitlistEmail-{{ section.id }}"
+          type="text"
+          id="WaitlistName-{{ section.id }}"
           class="field__input"
-          value="{{ form.email }}"
-          autocomplete="email"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          required
-          aria-required="true"
-          placeholder="Email address"
-          {% if form.errors %}
-            aria-invalid="true"
-            aria-describedby="WaitlistEmail-{{ section.id }}-error"
-          {% endif %}
+          data-waitlist-name
+          autocomplete="given-name"
+          placeholder="First name"
         >
-        <label class="field__label" for="WaitlistEmail-{{ section.id }}">Email</label>
+        <label class="field__label" for="WaitlistName-{{ section.id }}">First name</label>
       </div>
-      {%- if form.errors -%}
-        <small class="waitlist-{{ section.id }}__form-error" id="WaitlistEmail-{{ section.id }}-error">
-          {{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}
-        </small>
-      {%- endif -%}
-      <button type="submit" class="button waitlist-{{ section.id }}__form-button">
-        Join
-      </button>
-    {%- endif -%}
-  {%- endform -%}
+
+      <div class="waitlist-{{ section.id }}__field-row">
+        <div class="field">
+          <input
+            type="email"
+            id="WaitlistEmail-{{ section.id }}"
+            class="field__input"
+            data-waitlist-email
+            autocomplete="email"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            required
+            aria-required="true"
+            placeholder="Email address"
+          >
+          <label class="field__label" for="WaitlistEmail-{{ section.id }}">Email</label>
+        </div>
+        <button type="submit" class="button waitlist-{{ section.id }}__form-button">
+          Join
+        </button>
+      </div>
+
+      <small class="waitlist-{{ section.id }}__form-error" data-waitlist-error hidden></small>
+    </div>
+
+    <p class="waitlist-{{ section.id }}__form-success" data-waitlist-success hidden>
+      {{- 'icon-success.svg' | inline_asset_content -}}
+      You're on the list!
+    </p>
+  </form>
 </div>
 
 {%- if section.settings.klaviyo_form_class != blank -%}
