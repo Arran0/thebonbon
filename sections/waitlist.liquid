@@ -4,6 +4,32 @@
   assign button_font = section.settings.button_font
   assign input_font = section.settings.input_font
   assign card_alpha = section.settings.card_opacity | divided_by: 100.0
+
+  # Fluid, proportional sizing: these values scale continuously with the
+  # rendered width of the window graphic (via CSS container query units)
+  # instead of staying fixed while the window shrinks on a phone. 6.2 is
+  # 1% of the window's 62rem / 620px desktop design width, i.e. what 1cqw
+  # equals at that width -- so at the desktop cap each value resolves back
+  # to the exact px the merchant set, and scales down below that.
+  assign heading_size_floor = section.settings.heading_size | times: 0.6 | at_least: 12 | at_most: section.settings.heading_size
+  assign heading_size_cqw = section.settings.heading_size | divided_by: 6.2
+
+  assign button_size_floor = section.settings.button_size | times: 0.65 | at_least: 12 | at_most: section.settings.button_size
+  assign button_size_cqw = section.settings.button_size | divided_by: 6.2
+
+  # Input floor stays at 16px (never lower) so mobile Safari doesn't
+  # zoom in on focus, unless the merchant's own desktop size is smaller.
+  assign input_size_floor = 16 | at_most: section.settings.input_size
+  assign input_size_cqw = section.settings.input_size | divided_by: 6.2
+
+  assign card_padding_floor = section.settings.card_padding | times: 0.5 | at_most: section.settings.card_padding
+  assign card_padding_cqw = section.settings.card_padding | divided_by: 6.2
+
+  assign card_min_height_floor = section.settings.card_min_height | times: 0.5 | at_most: section.settings.card_min_height
+  assign card_min_height_cqw = section.settings.card_min_height | divided_by: 6.2
+
+  assign card_offset_x_cqw = section.settings.card_offset_x | divided_by: 6.2
+  assign card_offset_y_cqw = section.settings.card_offset_y | divided_by: 6.2
 -%}
 {%- style -%}
   {% if heading_font %}{{ heading_font | font_face: font_display: 'swap' }}{% endif %}
@@ -78,7 +104,7 @@
     margin: 0;
     line-height: 1.2;
     letter-spacing: 0.06em;
-    font-size: {{ section.settings.heading_size | divided_by: 10.0 }}rem;
+    font-size: clamp({{ heading_size_floor | divided_by: 10.0 }}rem, {{ heading_size_cqw }}cqw, {{ section.settings.heading_size | divided_by: 10.0 }}rem);
     color: {{ section.settings.heading_color }};
     {% if heading_font %}
       font-family: {{ heading_font.family }}, {{ heading_font.fallback_families }};
@@ -91,7 +117,7 @@
 
   .waitlist-{{ section.id }}__form-button {
     letter-spacing: 0.06em;
-    font-size: {{ section.settings.button_size | divided_by: 10.0 }}rem;
+    font-size: clamp({{ button_size_floor | divided_by: 10.0 }}rem, {{ button_size_cqw }}cqw, {{ section.settings.button_size | divided_by: 10.0 }}rem);
     color: {{ section.settings.button_color }};
     {% if button_font %}
       font-family: {{ button_font.family }}, {{ button_font.fallback_families }};
@@ -138,6 +164,7 @@
     position: relative;
     width: 100%;
     max-width: 62rem;
+    container-type: inline-size;
   }
 
   .waitlist-{{ section.id }}__window-image-frame {
@@ -161,7 +188,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.3rem;
+    gap: clamp(0.65rem, 2.097cqw, 1.3rem);
     overflow: visible;
     padding: 0.5rem;
   }
@@ -208,7 +235,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.25rem;
+    gap: clamp(0.6rem, 2.016cqw, 1.25rem);
     border: 7px solid {{ section.settings.window_frame_color }};
     border-top: none;
     border-radius: 0 0 16px 16px;
@@ -218,8 +245,8 @@
     box-shadow:
       inset 0 0 22px rgba(255, 255, 255, 0.35),
       0 20px 32px -14px rgba(80, 50, 40, 0.35);
-    padding: 2rem 2rem 1.75rem;
-    min-height: 16rem;
+    padding: clamp(1rem, 3.226cqw, 2rem) clamp(1rem, 3.226cqw, 2rem) clamp(0.9rem, 2.823cqw, 1.75rem);
+    min-height: clamp(8rem, 25.806cqw, 16rem);
   }
 
   .waitlist-{{ section.id }}__window-transom {
@@ -251,13 +278,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.3rem;
+    gap: clamp(0.65rem, 2.097cqw, 1.3rem);
     width: 100%;
     max-width: {{ section.settings.card_width }}%;
-    min-height: {{ section.settings.card_min_height }}px;
-    padding: {{ section.settings.card_padding }}px;
+    min-height: clamp({{ card_min_height_floor }}px, {{ card_min_height_cqw }}cqw, {{ section.settings.card_min_height }}px);
+    padding: clamp({{ card_padding_floor }}px, {{ card_padding_cqw }}cqw, {{ section.settings.card_padding }}px);
     border-radius: {{ section.settings.card_radius }}px;
-    transform: translate({{ section.settings.card_offset_x }}px, {{ section.settings.card_offset_y }}px);
+    transform: translate({{ card_offset_x_cqw }}cqw, {{ card_offset_y_cqw }}cqw);
     {% if section.settings.show_card %}
       background: {{ section.settings.card_color | color_modify: 'alpha', card_alpha }};
       border: 1px solid rgba(255, 255, 255, 0.55);
@@ -282,7 +309,7 @@
     flex-direction: column;
     align-items: stretch;
     width: 100%;
-    gap: 1.4rem;
+    gap: clamp(0.7rem, 2.258cqw, 1.4rem);
   }
 
   /* Each field is a rose-water pill holding just the input + placeholder. */
@@ -318,7 +345,7 @@
     padding: 0 1.4rem;
     margin: 0;
     box-shadow: none;
-    font-size: {{ section.settings.input_size | divided_by: 10.0 }}rem;
+    font-size: clamp({{ input_size_floor | divided_by: 10.0 }}rem, {{ input_size_cqw }}cqw, {{ section.settings.input_size | divided_by: 10.0 }}rem);
     text-align: left;
     color: {{ section.settings.input_color }};
     {% if input_font %}
