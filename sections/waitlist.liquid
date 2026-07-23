@@ -1,8 +1,15 @@
 {%- liquid
-  assign accent_font = section.settings.accent_font
+  assign heading_font = section.settings.accent_font
+  assign subheading_font = section.settings.subheading_font
+  assign button_font = section.settings.button_font
+  assign input_font = section.settings.input_font
+  assign card_alpha = section.settings.card_opacity | divided_by: 100.0
 -%}
 {%- style -%}
-  {% if accent_font %}{{ accent_font | font_face: font_display: 'swap' }}{% endif %}
+  {% if heading_font %}{{ heading_font | font_face: font_display: 'swap' }}{% endif %}
+  {% if subheading_font %}{{ subheading_font | font_face: font_display: 'swap' }}{% endif %}
+  {% if button_font %}{{ button_font | font_face: font_display: 'swap' }}{% endif %}
+  {% if input_font %}{{ input_font | font_face: font_display: 'swap' }}{% endif %}
 
   .waitlist-{{ section.id }} {
     position: relative;
@@ -65,26 +72,34 @@
     height: auto;
   }
 
-  /* Heading, subheading and the Join button all share one accent
-     look: same color, same font, same size, same generous tracking. */
-  .waitlist-{{ section.id }}__heading,
-  .waitlist-{{ section.id }}__subheading,
-  .waitlist-{{ section.id }}__form-button {
-    font-size: 1.6rem;
+  /* Every piece of text on the page has its own font / size / color,
+     all editable from the theme editor's Typography section. */
+  .waitlist-{{ section.id }}__heading {
+    margin: 0;
+    line-height: 1.2;
     letter-spacing: 0.06em;
+    font-size: {{ section.settings.heading_size | divided_by: 10.0 }}rem;
     color: {{ section.settings.heading_color }};
-    {% if accent_font %}
-      font-family: {{ accent_font.family }}, {{ accent_font.fallback_families }};
-      font-weight: {{ accent_font.weight }};
-      font-style: {{ accent_font.style }};
+    {% if heading_font %}
+      font-family: {{ heading_font.family }}, {{ heading_font.fallback_families }};
+      font-weight: {{ heading_font.weight }};
+      font-style: {{ heading_font.style }};
     {% else %}
       font-weight: 700;
     {% endif %}
   }
 
-  .waitlist-{{ section.id }}__heading {
-    margin: 0;
-    line-height: 1.2;
+  .waitlist-{{ section.id }}__form-button {
+    letter-spacing: 0.06em;
+    font-size: {{ section.settings.button_size | divided_by: 10.0 }}rem;
+    color: {{ section.settings.button_color }};
+    {% if button_font %}
+      font-family: {{ button_font.family }}, {{ button_font.fallback_families }};
+      font-weight: {{ button_font.weight }};
+      font-style: {{ button_font.style }};
+    {% else %}
+      font-weight: 700;
+    {% endif %}
   }
 
   .waitlist-{{ section.id }}__subheading {
@@ -95,6 +110,16 @@
     white-space: nowrap;
     max-width: 100%;
     overflow-x: auto;
+    letter-spacing: 0.06em;
+    font-size: {{ section.settings.subheading_size | divided_by: 10.0 }}rem;
+    color: {{ section.settings.subheading_color }};
+    {% if subheading_font %}
+      font-family: {{ subheading_font.family }}, {{ subheading_font.fallback_families }};
+      font-weight: {{ subheading_font.weight }};
+      font-style: {{ subheading_font.style }};
+    {% else %}
+      font-weight: 700;
+    {% endif %}
   }
 
   /* Normalize whatever tag the subheading richtext uses (p, h5, ...)
@@ -182,7 +207,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 1.25rem;
     border: 7px solid {{ section.settings.window_frame_color }};
     border-top: none;
@@ -214,6 +239,34 @@
     background: {{ section.settings.window_frame_color }};
     border-radius: 2px;
     box-shadow: 0 5px 10px rgba(80, 50, 40, 0.25);
+  }
+
+  /* White translucent card that groups the heading + form together.
+     Its corner position and size are driven by the theme editor. */
+  .waitlist-{{ section.id }}__card {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.3rem;
+    width: 100%;
+    max-width: {{ section.settings.card_width }}%;
+    min-height: {{ section.settings.card_min_height }}px;
+    padding: {{ section.settings.card_padding }}px;
+    border-radius: {{ section.settings.card_radius }}px;
+    transform: translate({{ section.settings.card_offset_x }}px, {{ section.settings.card_offset_y }}px);
+    {% if section.settings.show_card %}
+      background: {{ section.settings.card_color | color_modify: 'alpha', card_alpha }};
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow:
+        0 12px 34px -14px rgba(80, 50, 40, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(6px) saturate(115%);
+      -webkit-backdrop-filter: blur(6px) saturate(115%);
+    {% endif %}
   }
 
   .waitlist-{{ section.id }}__form-wrapper {
@@ -265,9 +318,14 @@
     padding: 0 1.4rem;
     margin: 0;
     box-shadow: none;
-    font-size: 1.4rem;
+    font-size: {{ section.settings.input_size | divided_by: 10.0 }}rem;
     text-align: left;
-    color: {{ section.settings.window_frame_color }};
+    color: {{ section.settings.input_color }};
+    {% if input_font %}
+      font-family: {{ input_font.family }}, {{ input_font.fallback_families }};
+      font-weight: {{ input_font.weight }};
+      font-style: {{ input_font.style }};
+    {% endif %}
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field__input:focus {
@@ -277,7 +335,8 @@
 
   .waitlist-{{ section.id }}__form-wrapper .field__input::placeholder {
     opacity: 1 !important;
-    color: {{ section.settings.window_frame_color | color_modify: 'alpha', 0.75 }} !important;
+    color: {{ section.settings.input_color | color_modify: 'alpha', 0.7 }} !important;
+    text-align: left;
   }
 
   /* Standalone, centered Join button. */
@@ -406,13 +465,15 @@
               | image_tag: loading: 'lazy', widths: '375, 550, 750, 1100, 1500'
             }}
             <div class="waitlist-{{ section.id }}__window-image-slot">
-              {%- if section.settings.heading != blank -%}
-                <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
-                  {{ section.settings.heading }}
-                </h1>
-              {%- endif -%}
+              <div class="waitlist-{{ section.id }}__card">
+                {%- if section.settings.heading != blank -%}
+                  <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
+                    {{ section.settings.heading }}
+                  </h1>
+                {%- endif -%}
 
-              {%- render 'waitlist-signup-form', section: section -%}
+                {%- render 'waitlist-signup-form', section: section -%}
+              </div>
             </div>
           </div>
         {%- else -%}
@@ -424,13 +485,15 @@
           <div class="waitlist-{{ section.id }}__window-body">
             <div class="waitlist-{{ section.id }}__window-transom" aria-hidden="true"></div>
 
-            {%- if section.settings.heading != blank -%}
-              <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
-                {{ section.settings.heading }}
-              </h1>
-            {%- endif -%}
+            <div class="waitlist-{{ section.id }}__card">
+              {%- if section.settings.heading != blank -%}
+                <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
+                  {{ section.settings.heading }}
+                </h1>
+              {%- endif -%}
 
-            {%- render 'waitlist-signup-form', section: section -%}
+              {%- render 'waitlist-signup-form', section: section -%}
+            </div>
           </div>
           <div class="waitlist-{{ section.id }}__window-sill" aria-hidden="true"></div>
         {%- endif -%}
@@ -470,24 +533,191 @@
       "default": "Save your spot!"
     },
     {
-      "type": "color",
-      "id": "heading_color",
-      "label": "Accent text color",
-      "info": "Shared by the heading, subheading, and Join button label.",
-      "default": "#FF97A3"
-    },
-    {
-      "type": "font_picker",
-      "id": "accent_font",
-      "label": "Accent font",
-      "info": "Shared by the heading, subheading, and Join button label. Search for \"Otama\" -- if it isn't in Shopify's font library under this exact name, pick the closest match here.",
-      "default": "otama_n4"
-    },
-    {
       "type": "richtext",
       "id": "subheading",
       "label": "Subheading (shown below the window)",
       "default": "<p>Launch offers, goodies and exclusive deals for you 🎀</p>"
+    },
+    {
+      "type": "header",
+      "content": "Typography",
+      "info": "Every piece of text on the page -- heading, subheading, Join button label and the Name/Email inputs -- has its own font, size and color below."
+    },
+    {
+      "type": "font_picker",
+      "id": "accent_font",
+      "label": "Heading font",
+      "info": "Search for \"Otama\" -- if it isn't in Shopify's font library under this exact name, pick the closest match.",
+      "default": "otama_n4"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 10,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#FF97A3"
+    },
+    {
+      "type": "font_picker",
+      "id": "subheading_font",
+      "label": "Subheading font",
+      "default": "otama_n4"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Subheading size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading color",
+      "default": "#FF97A3"
+    },
+    {
+      "type": "font_picker",
+      "id": "button_font",
+      "label": "Join button font",
+      "default": "otama_n4"
+    },
+    {
+      "type": "range",
+      "id": "button_size",
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Join button label size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Join button label color",
+      "default": "#FF97A3"
+    },
+    {
+      "type": "font_picker",
+      "id": "input_font",
+      "label": "Input text font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "input_size",
+      "min": 10,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Input text size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "input_color",
+      "label": "Input & placeholder color",
+      "default": "#7D4A52"
+    },
+    {
+      "type": "header",
+      "content": "Card",
+      "info": "A translucent white square that groups the heading and the signup form together. Because the card, its text and the window are all part of this one section, they move as a single locked group -- the corner controls below keep the card aligned inside the window."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_card",
+      "label": "Show translucent card",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "card_color",
+      "label": "Card color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "card_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Card opacity (translucency)",
+      "default": 55
+    },
+    {
+      "type": "range",
+      "id": "card_width",
+      "min": 40,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Card width (right corner)",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "card_min_height",
+      "min": 0,
+      "max": 500,
+      "step": 5,
+      "unit": "px",
+      "label": "Card minimum height (bottom corner)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "card_offset_x",
+      "min": -200,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "Card horizontal offset (left corner)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "card_offset_y",
+      "min": -200,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "Card vertical offset (top corner)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Card corner rounding",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Card inner padding",
+      "default": 20
     },
     {
       "type": "header",
