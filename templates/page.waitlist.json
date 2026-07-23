@@ -15,6 +15,7 @@
       "settings": {
         "heading": "Save your spot!",
         "heading_color": "#ff97a3",
+        "accent_font": "otama_n4",
         "subheading": "<h5>Launch offers, goodies and exclusive deals for you 🎀</h5>",
         "logo": "shopify://shop_images/10.png",
         "logo_width": 290,
