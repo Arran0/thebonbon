@@ -64,6 +64,48 @@
   .waitlist-{{ section.id }}__heading {
     margin: 0;
     font-size: 1.7rem;
+    font-weight: 700;
+    background-image: linear-gradient(
+      100deg,
+      {{ section.settings.heading_color }} 45%,
+      {{ section.settings.heading_color | color_lighten: 40 }} 50%,
+      {{ section.settings.heading_color }} 55%
+    );
+    background-size: 300% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: waitlist-{{ section.id }}-shine 4s ease-in-out infinite;
+  }
+
+  @keyframes waitlist-{{ section.id }}-shine {
+    0%, 15% {
+      background-position: 100% 0;
+    }
+    85%, 100% {
+      background-position: -100% 0;
+    }
+  }
+
+  .waitlist-{{ section.id }}__heading-type::after {
+    content: '';
+    display: inline-block;
+    width: 0.08em;
+    margin-left: 0.05em;
+    height: 1em;
+    vertical-align: -0.1em;
+    background: currentColor;
+    animation: waitlist-{{ section.id }}-cursor 0.8s step-end infinite;
+  }
+
+  @keyframes waitlist-{{ section.id }}-cursor {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
   }
 
   @media screen and (min-width: 750px) {
@@ -75,11 +117,13 @@
   /* ...or font size 2 of 2: the shared body copy size below. */
   .waitlist-{{ section.id }}__subheading {
     margin: 1.25rem 0 0;
-    max-width: 34rem;
     padding: 0.6rem 1.25rem;
     border-radius: 999px;
-    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.8 }};
+    background: rgba(255, 255, 255, 0.55);
     color: {{ section.settings.window_frame_color }};
+    white-space: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   .waitlist-{{ section.id }}__subheading p {
@@ -209,19 +253,20 @@
 
   .waitlist-{{ section.id }}__field-pill,
   .waitlist-{{ section.id }}__field-row {
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     width: 100%;
-    height: 2.6rem;
+    height: 3rem;
     border-radius: 999px;
-    border: 1.5px solid {{ section.settings.window_frame_color }};
-    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.85 }};
+    border: 2px solid {{ section.settings.window_frame_color }};
+    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.9 }};
     box-shadow: 0 4px 10px rgba(125, 74, 82, 0.18);
     overflow: hidden;
   }
 
   .waitlist-{{ section.id }}__field-row {
-    margin-top: 0.5rem;
+    margin-top: 0.6rem;
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field {
@@ -229,14 +274,30 @@
     flex: 1;
     min-width: 0;
     width: auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .waitlist-{{ section.id }}__field-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.3rem;
+    padding: 0.25rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.6);
+    color: {{ section.settings.window_frame_color }};
+    font-weight: 700;
+    white-space: nowrap;
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field__input {
     width: 100%;
-    height: 2.6rem;
+    height: 100%;
     border: none;
     background: transparent;
-    padding: 0 0 0 1.1rem;
+    padding: 0 1rem;
     margin: 0;
     box-shadow: none;
     color: {{ section.settings.window_frame_color }};
@@ -248,7 +309,7 @@
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field__input::placeholder {
-    color: {{ section.settings.window_frame_color | color_modify: 'alpha', 0.65 }};
+    color: {{ section.settings.window_frame_color | color_modify: 'alpha', 0.55 }};
   }
 
   .waitlist-{{ section.id }}__form-wrapper .field__label {
@@ -264,17 +325,28 @@
   }
 
   .waitlist-{{ section.id }}__form-button {
+    box-sizing: border-box;
     flex: 0 0 auto;
-    height: calc(2.6rem - 4px);
-    margin: 2px;
-    padding: 0 1.3rem;
+    width: auto;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0 1.4rem;
     border: none;
-    border-radius: 999px;
+    border-radius: 0 999px 999px 0;
     background: {{ section.settings.window_frame_color }};
     color: {{ section.settings.window_glass_color }};
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1;
     letter-spacing: 0.02rem;
     box-shadow: none;
+  }
+
+  .waitlist-{{ section.id }}__form-button::before,
+  .waitlist-{{ section.id }}__form-button::after {
+    content: none;
   }
 
   .waitlist-{{ section.id }}__form-error {
@@ -287,14 +359,15 @@
   }
 
   .waitlist-{{ section.id }}__form-success {
+    box-sizing: border-box;
     gap: 0.5rem;
     width: 100%;
-    height: 2.6rem;
+    height: 3rem;
     margin: 0;
     padding: 0 1.25rem;
     border-radius: 999px;
-    border: 1.5px solid {{ section.settings.window_frame_color }};
-    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.85 }};
+    border: 2px solid {{ section.settings.window_frame_color }};
+    background: {{ section.settings.window_glass_color | color_modify: 'alpha', 0.9 }};
     color: {{ section.settings.window_frame_color }};
   }
 
@@ -355,8 +428,12 @@
             }}
             <div class="waitlist-{{ section.id }}__window-image-slot">
               {%- if section.settings.heading != blank -%}
-                <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
-                  {{ section.settings.heading }}
+                <h1 class="waitlist-{{ section.id }}__heading" aria-label="{{ section.settings.heading | strip_html | escape }}">
+                  <span
+                    class="waitlist-{{ section.id }}__heading-type"
+                    aria-hidden="true"
+                    data-typing-text="{{ section.settings.heading | strip_html | escape }}"
+                  ></span>
                 </h1>
               {%- endif -%}
 
@@ -373,8 +450,12 @@
             <div class="waitlist-{{ section.id }}__window-transom" aria-hidden="true"></div>
 
             {%- if section.settings.heading != blank -%}
-              <h1 class="waitlist-{{ section.id }}__heading inline-richtext">
-                {{ section.settings.heading }}
+              <h1 class="waitlist-{{ section.id }}__heading" aria-label="{{ section.settings.heading | strip_html | escape }}">
+                <span
+                  class="waitlist-{{ section.id }}__heading-type"
+                  aria-hidden="true"
+                  data-typing-text="{{ section.settings.heading | strip_html | escape }}"
+                ></span>
               </h1>
             {%- endif -%}
 
@@ -401,6 +482,7 @@
 </div>
 
 <script src="{{ 'waitlist-signup-form.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'waitlist-heading-type.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
@@ -416,6 +498,13 @@
       "id": "heading",
       "label": "Heading (shown inside the window)",
       "default": "Save your spot!"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "info": "A bold, shiny dark pink. The heading types itself out and re-loops every 10 seconds.",
+      "default": "#C2185B"
     },
     {
       "type": "richtext",

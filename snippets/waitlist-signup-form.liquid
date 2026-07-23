@@ -12,19 +12,20 @@
   >
     <div data-waitlist-fields>
       <div class="field waitlist-{{ section.id }}__field-pill">
+        <span class="waitlist-{{ section.id }}__field-badge" aria-hidden="true">Name</span>
         <input
           type="text"
           id="WaitlistName-{{ section.id }}"
           class="field__input"
           data-waitlist-name
           autocomplete="given-name"
-          placeholder="First name"
         >
         <label class="field__label" for="WaitlistName-{{ section.id }}">First name</label>
       </div>
 
       <div class="waitlist-{{ section.id }}__field-row">
         <div class="field">
+          <span class="waitlist-{{ section.id }}__field-badge" aria-hidden="true">Email</span>
           <input
             type="email"
             id="WaitlistEmail-{{ section.id }}"
@@ -36,11 +37,10 @@
             spellcheck="false"
             required
             aria-required="true"
-            placeholder="Email address"
           >
           <label class="field__label" for="WaitlistEmail-{{ section.id }}">Email</label>
         </div>
-        <button type="submit" class="button waitlist-{{ section.id }}__form-button">
+        <button type="submit" class="waitlist-{{ section.id }}__form-button">
           Join
         </button>
       </div>

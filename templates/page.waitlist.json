@@ -14,6 +14,7 @@
       "type": "waitlist",
       "settings": {
         "heading": "Save your spot!",
+        "heading_color": "#C2185B",
         "subheading": "<p>Launch offers, goodies and exclusive deals for you 🎀</p>",
         "logo": "shopify://shop_images/10.png",
         "logo_width": 290,
