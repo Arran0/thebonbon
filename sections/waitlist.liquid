@@ -8,9 +8,12 @@
   # Fluid, proportional sizing: these values scale continuously with the
   # rendered width of the window graphic (via CSS container query units)
   # instead of staying fixed while the window shrinks on a phone. 6.2 is
-  # 1% of the window's 62rem / 620px desktop design width, i.e. what 1cqw
-  # equals at that width -- so at the desktop cap each value resolves back
-  # to the exact px the merchant set, and scales down below that.
+  # 1% of the window's 620px default base width (window_max_width), i.e.
+  # what 1cqw equals at that width -- so at that width each value resolves
+  # back to the exact px the merchant set, and scales down below that.
+  # (If a merchant raises window_max_width, these values simply hit their
+  # ceiling a bit earlier relative to the window's new, larger cap --
+  # harmless, since clamp() always caps the final value at that ceiling.)
   assign heading_size_floor = section.settings.heading_size | times: 0.6 | at_least: 12 | at_most: section.settings.heading_size
   assign heading_size_cqw = section.settings.heading_size | divided_by: 6.2
 
@@ -59,7 +62,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
     min-height: {{ section.settings.min_height }}px;
@@ -184,7 +187,7 @@
   .waitlist-{{ section.id }}__window {
     position: relative;
     width: 100%;
-    max-width: 62rem;
+    max-width: {{ section.settings.window_max_width }}px;
     container-type: inline-size;
     {% if section.settings.zoom_enable %}
       transform: scale(1);
@@ -523,7 +526,7 @@
     {%- endif -%}
 
     {%- if section.settings.klaviyo_form_class != blank -%}
-      <div class="waitlist-{{ section.id }}__window{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+      <div class="waitlist-{{ section.id }}__window{% if settings.animations_reveal_on_scroll and section.settings.zoom_enable != true %} scroll-trigger animate--slide-in{% endif %}">
         {%- if section.settings.window_image != blank -%}
           <div class="waitlist-{{ section.id }}__window-image-frame">
             {{
@@ -769,8 +772,8 @@
       "type": "range",
       "id": "card_min_height",
       "min": 0,
-      "max": 500,
-      "step": 5,
+      "max": 900,
+      "step": 10,
       "unit": "px",
       "label": "Card minimum height (bottom corner)",
       "default": 0
@@ -972,6 +975,17 @@
     {
       "type": "paragraph",
       "content": "The signup form is framed by an arched window. Upload your own window graphic below to replace the built-in CSS window, or leave it blank to keep the tinted-glass version."
+    },
+    {
+      "type": "range",
+      "id": "window_max_width",
+      "min": 300,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "label": "Window base width",
+      "info": "Caps how wide the window (and the card, its text and the form riding inside it) can render. It's allowed to exceed a phone's screen width -- the window will spill past the edges rather than get squeezed down. The zoom-in animation's end size (below) multiplies this.",
+      "default": 620
     },
     {
       "type": "image_picker",
