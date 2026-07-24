@@ -20,8 +20,10 @@
   assign button_size_floor = section.settings.button_size | times: 0.65 | at_least: 12 | at_most: section.settings.button_size
   assign button_size_cqw = section.settings.button_size | divided_by: 6.2
 
-  # Input floor stays at 16px (never lower) so mobile Safari doesn't
-  # zoom in on focus, unless the merchant's own desktop size is smaller.
+  # This floor still lets the fluid font shrink below 16px if the
+  # merchant's own desktop size is smaller -- the hard 16px minimum that
+  # actually stops mobile Safari zooming on focus is enforced separately
+  # in CSS via max(16px, ...) on the input's font-size below.
   assign input_size_floor = 16 | at_most: section.settings.input_size
   assign input_size_cqw = section.settings.input_size | divided_by: 6.2
 
@@ -59,6 +61,16 @@
   # match whichever configured window size is largest, plus room for its
   # own side padding, so it's never the bottleneck.
   assign content_max_width = window_static_max_width | at_least: window_static_max_width_mobile | plus: 48 | at_least: 1088
+
+  # The window is allowed to render wider than the viewport on purpose
+  # (see window_max_width_mobile above), spilling past the section's own
+  # left/right edges. The background image is sized to the section's own
+  # box, so without this it wouldn't reach that spill -- invisible during
+  # normal scrolling (overflow-x:hidden on <body> hides it), but a pinch
+  # zoom can still reveal the gap since that bypasses scroll clipping.
+  # Extending the background half the widest configured window size on
+  # each side guarantees it always reaches at least as far as the window can.
+  assign background_buffer_x = window_static_max_width | at_least: window_static_max_width_mobile | divided_by: 2
 
   # Name/email box height + rounding and the Join button's padding are
   # fully editable per view: the "mobile" setting is the floor, the
@@ -101,7 +113,10 @@
 
   .waitlist-{{ section.id }}__background {
     position: absolute;
-    inset: 0;
+    top: 0;
+    bottom: 0;
+    left: -{{ background_buffer_x }}px;
+    right: -{{ background_buffer_x }}px;
     z-index: 0;
   }
 
@@ -125,7 +140,10 @@
 
   .waitlist-{{ section.id }}__overlay {
     position: absolute;
-    inset: 0;
+    top: 0;
+    bottom: 0;
+    left: -{{ background_buffer_x }}px;
+    right: -{{ background_buffer_x }}px;
     z-index: 1;
     background: {{ section.settings.overlay_color }};
     opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
@@ -508,7 +526,7 @@
     padding: 0 1.4rem;
     margin: 0;
     box-shadow: none;
-    font-size: clamp({{ input_size_floor | divided_by: 10.0 }}rem, {{ input_size_cqw }}cqw, {{ section.settings.input_size | divided_by: 10.0 }}rem);
+    font-size: max(16px, clamp({{ input_size_floor | divided_by: 10.0 }}rem, {{ input_size_cqw }}cqw, {{ section.settings.input_size | divided_by: 10.0 }}rem));
     text-align: left;
     color: {{ section.settings.input_color }};
     {% if input_font %}
