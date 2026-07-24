@@ -38,6 +38,21 @@
   assign card_offset_x_mobile_cqw = section.settings.card_offset_x_mobile | divided_by: 6.2
   assign card_offset_y_mobile_cqw = section.settings.card_offset_y_mobile | divided_by: 6.2
 
+  # Window zoom mirrors the card's before/after style: both are plain
+  # percentages of the window's base width, and either can go past 100%.
+  # To keep this safe (so the window can never grow into the logo above
+  # or the subheading below, even past 100%), the space actually reserved
+  # in the page layout is the "after" size, not the raw base width -- the
+  # window only ever animates within space already set aside for it.
+  assign window_static_max_width = section.settings.window_max_width
+  assign window_static_max_width_mobile = section.settings.window_max_width_mobile
+  assign window_rest_scale = 1.0
+  if section.settings.zoom_enable
+    assign window_static_max_width = section.settings.window_max_width | times: section.settings.zoom_after_scale | divided_by: 100.0
+    assign window_static_max_width_mobile = section.settings.window_max_width_mobile | times: section.settings.zoom_after_scale | divided_by: 100.0
+    assign window_rest_scale = section.settings.zoom_before_scale | times: 1.0 | divided_by: section.settings.zoom_after_scale
+  endif
+
   # Name/email box height + rounding and the Join button's padding are
   # fully editable per view: the "mobile" setting is the floor, the
   # "desktop" setting is the ceiling, and it scales fluidly between them.
@@ -247,9 +262,9 @@
   .waitlist-{{ section.id }}__window {
     position: relative;
     width: 100%;
-    max-width: {{ section.settings.window_max_width_mobile }}px;
+    max-width: {{ window_static_max_width_mobile }}px;
     container-type: inline-size;
-    transform: translate({{ section.settings.window_offset_x_mobile }}px, {{ section.settings.window_offset_y_mobile }}px){% if section.settings.zoom_enable %} scale({{ section.settings.zoom_start_scale | divided_by: 100.0 }}){% endif %};
+    transform: translate({{ section.settings.window_offset_x_mobile }}px, {{ section.settings.window_offset_y_mobile }}px){% if section.settings.zoom_enable %} scale({{ window_rest_scale }}){% endif %};
     {% if section.settings.zoom_enable %}
       transform-origin: center center;
       transition: transform {{ section.settings.zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
@@ -265,8 +280,8 @@
 
   @media screen and (min-width: 750px) {
     .waitlist-{{ section.id }}__window {
-      max-width: {{ section.settings.window_max_width }}px;
-      transform: translate({{ section.settings.window_offset_x }}px, {{ section.settings.window_offset_y }}px){% if section.settings.zoom_enable %} scale({{ section.settings.zoom_start_scale | divided_by: 100.0 }}){% endif %};
+      max-width: {{ window_static_max_width }}px;
+      transform: translate({{ section.settings.window_offset_x }}px, {{ section.settings.window_offset_y }}px){% if section.settings.zoom_enable %} scale({{ window_rest_scale }}){% endif %};
     }
 
     {% if section.settings.zoom_enable %}
@@ -1269,8 +1284,8 @@
       "max": 1200,
       "step": 20,
       "unit": "px",
-      "label": "Window size after expanding (desktop)",
-      "info": "The window's full, 100% size -- what it looks like at rest, and what the zoom-in animation below grows up to (never past it). Also caps how wide the card, its text and the form can render.",
+      "label": "Window base width (desktop)",
+      "info": "The window's reference size -- also caps how wide the card, its text and the form can render. With the entrance animation below off, this is the window's exact rendered size; with it on, the Size before/after expanding %s below multiply this.",
       "default": 620
     },
     {
@@ -1280,7 +1295,7 @@
       "max": 1200,
       "step": 20,
       "unit": "px",
-      "label": "Window size after expanding (phone)",
+      "label": "Window base width (phone)",
       "info": "Same as the desktop version above, for phone screens. Allowed to exceed a phone's screen width -- the window will spill past the edges rather than get squeezed down.",
       "default": 620
     },
@@ -1399,7 +1414,7 @@
     },
     {
       "type": "paragraph",
-      "content": "When a visitor scrolls the window into view, it grows from the start size below up to its full 100% size and stays there -- never past 100%, so it can't overlap the logo or subheading. Card, logo, subheading and background each have their own separate zoom toggle -- see those sections."
+      "content": "When a visitor scrolls the window into view, it animates from its size-before to its size-after below and stays there. Space is always reserved for the after size, so it can't overlap the logo or subheading. Card, logo, subheading and background each have their own separate zoom toggle -- see those sections."
     },
     {
       "type": "checkbox",
@@ -1409,14 +1424,25 @@
     },
     {
       "type": "range",
-      "id": "zoom_start_scale",
-      "min": 40,
-      "max": 100,
+      "id": "zoom_before_scale",
+      "min": 50,
+      "max": 150,
       "step": 5,
       "unit": "%",
-      "label": "Start size",
-      "info": "The window (and card) start at this % of the size set elsewhere in this section and grow to 100% on scroll. Growing only up to 100% guarantees the window can never expand into the logo above or the subheading below.",
+      "label": "Window size before expanding",
+      "info": "% of the window's base width (above) shown before it scrolls into view.",
       "default": 85
+    },
+    {
+      "type": "range",
+      "id": "zoom_after_scale",
+      "min": 50,
+      "max": 150,
+      "step": 5,
+      "unit": "%",
+      "label": "Window size after expanding",
+      "info": "% of the window's base width once it has scrolled into view and finished animating. The window's space is always reserved for this final size from the start, so it can never overlap the logo above or subheading below -- even above 100%.",
+      "default": 100
     },
     {
       "type": "range",
