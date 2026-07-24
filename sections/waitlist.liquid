@@ -280,6 +280,7 @@
     .waitlist-{{ section.id }}__window,
     .waitlist-{{ section.id }}__logo-wrapper,
     .waitlist-{{ section.id }}__subheading,
+    .waitlist-{{ section.id }}__card,
     .waitlist-{{ section.id }}__background img {
       transition: none;
     }
@@ -402,7 +403,11 @@
     min-height: clamp({{ card_min_height_floor }}px, {{ card_min_height_cqw }}cqw, {{ section.settings.card_min_height }}px);
     padding: clamp({{ card_padding_floor }}px, {{ card_padding_cqw }}cqw, {{ section.settings.card_padding }}px);
     border-radius: {{ section.settings.card_radius }}px;
-    transform: translate({{ card_offset_x_mobile_cqw }}cqw, {{ card_offset_y_mobile_cqw }}cqw);
+    transform: translate({{ card_offset_x_mobile_cqw }}cqw, {{ card_offset_y_mobile_cqw }}cqw){% if section.settings.card_zoom_enable %} scale({{ section.settings.card_zoom_before_scale | divided_by: 100.0 }}){% endif %};
+    {% if section.settings.card_zoom_enable %}
+      transition: transform {{ section.settings.zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    {% endif %}
     {% if section.settings.show_card %}
       background: {{ section.settings.card_color | color_modify: 'alpha', card_alpha }};
       border: 1px solid rgba(255, 255, 255, 0.55);
@@ -414,10 +419,22 @@
     {% endif %}
   }
 
+  {% if section.settings.card_zoom_enable %}
+    .waitlist-{{ section.id }}__card.waitlist-in-view {
+      transform: translate({{ card_offset_x_mobile_cqw }}cqw, {{ card_offset_y_mobile_cqw }}cqw) scale({{ section.settings.card_zoom_after_scale | divided_by: 100.0 }});
+    }
+  {% endif %}
+
   @media screen and (min-width: 750px) {
     .waitlist-{{ section.id }}__card {
-      transform: translate({{ card_offset_x_cqw }}cqw, {{ card_offset_y_cqw }}cqw);
+      transform: translate({{ card_offset_x_cqw }}cqw, {{ card_offset_y_cqw }}cqw){% if section.settings.card_zoom_enable %} scale({{ section.settings.card_zoom_before_scale | divided_by: 100.0 }}){% endif %};
     }
+
+    {% if section.settings.card_zoom_enable %}
+      .waitlist-{{ section.id }}__card.waitlist-in-view {
+        transform: translate({{ card_offset_x_cqw }}cqw, {{ card_offset_y_cqw }}cqw) scale({{ section.settings.card_zoom_after_scale | divided_by: 100.0 }});
+      }
+    {% endif %}
   }
 
   .waitlist-{{ section.id }}__form-wrapper {
@@ -671,7 +688,7 @@
 
 {%- liquid
   assign any_zoom_enabled = false
-  if section.settings.zoom_enable or section.settings.logo_zoom_enable or section.settings.subheading_zoom_enable or section.settings.background_zoom_enable
+  if section.settings.zoom_enable or section.settings.logo_zoom_enable or section.settings.subheading_zoom_enable or section.settings.background_zoom_enable or section.settings.card_zoom_enable
     assign any_zoom_enabled = true
   endif
 -%}
@@ -683,6 +700,7 @@
       {% if section.settings.logo_zoom_enable %}selectors.push('.waitlist-{{ section.id }}__logo-wrapper');{% endif %}
       {% if section.settings.subheading_zoom_enable %}selectors.push('.waitlist-{{ section.id }}__subheading');{% endif %}
       {% if section.settings.background_zoom_enable %}selectors.push('.waitlist-{{ section.id }}');{% endif %}
+      {% if section.settings.card_zoom_enable %}selectors.push('.waitlist-{{ section.id }}__card');{% endif %}
 
       var hasIO = 'IntersectionObserver' in window;
 
@@ -946,6 +964,34 @@
       "label": "Card inner padding (phone)",
       "info": "The card scales smoothly between this and the desktop padding above as the window shrinks.",
       "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "card_zoom_enable",
+      "label": "Animate card zooming in on scroll",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "card_zoom_before_scale",
+      "min": 50,
+      "max": 150,
+      "step": 5,
+      "unit": "%",
+      "label": "Card size before expanding",
+      "info": "% of the card's configured size (Width, Min height, Padding above) shown before it scrolls into view.",
+      "default": 85
+    },
+    {
+      "type": "range",
+      "id": "card_zoom_after_scale",
+      "min": 50,
+      "max": 150,
+      "step": 5,
+      "unit": "%",
+      "label": "Card size after expanding",
+      "info": "% of the card's configured size once it has scrolled into view and finished animating. 100% = its size exactly as configured above.",
+      "default": 100
     },
     {
       "type": "header",
@@ -1223,8 +1269,8 @@
       "max": 1200,
       "step": 20,
       "unit": "px",
-      "label": "Window base width (desktop)",
-      "info": "Caps how wide the window (and the card, its text and the form riding inside it) can render. This is the window's full, 100% size -- the zoom-in animation below only ever grows up to this width, never past it.",
+      "label": "Window size after expanding (desktop)",
+      "info": "The window's full, 100% size -- what it looks like at rest, and what the zoom-in animation below grows up to (never past it). Also caps how wide the card, its text and the form can render.",
       "default": 620
     },
     {
@@ -1234,8 +1280,8 @@
       "max": 1200,
       "step": 20,
       "unit": "px",
-      "label": "Window base width (phone)",
-      "info": "Allowed to exceed a phone's screen width -- the window will spill past the edges rather than get squeezed down.",
+      "label": "Window size after expanding (phone)",
+      "info": "Same as the desktop version above, for phone screens. Allowed to exceed a phone's screen width -- the window will spill past the edges rather than get squeezed down.",
       "default": 620
     },
     {
@@ -1353,7 +1399,7 @@
     },
     {
       "type": "paragraph",
-      "content": "When a visitor scrolls the window into view, it (with the card, text and form inside it) grows from the start size below up to its full 100% size and stays there. It never grows past 100%, so it can't overlap the logo or subheading. Logo, subheading and background have their own zoom toggles -- see those sections."
+      "content": "When a visitor scrolls the window into view, it grows from the start size below up to its full 100% size and stays there -- never past 100%, so it can't overlap the logo or subheading. Card, logo, subheading and background each have their own separate zoom toggle -- see those sections."
     },
     {
       "type": "checkbox",
