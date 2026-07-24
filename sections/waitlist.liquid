@@ -4,6 +4,52 @@
   assign button_font = section.settings.button_font
   assign input_font = section.settings.input_font
   assign card_alpha = section.settings.card_opacity | divided_by: 100.0
+
+  # Fluid, proportional sizing: these values scale continuously with the
+  # rendered width of the window graphic (via CSS container query units)
+  # instead of staying fixed while the window shrinks on a phone. 6.2 is
+  # 1% of the window's 620px default base width (window_max_width), i.e.
+  # what 1cqw equals at that width -- so at that width each value resolves
+  # back to the exact px the merchant set, and scales down below that.
+  # (If a merchant raises window_max_width, these values simply hit their
+  # ceiling a bit earlier relative to the window's new, larger cap --
+  # harmless, since clamp() always caps the final value at that ceiling.)
+  assign heading_size_floor = section.settings.heading_size | times: 0.6 | at_least: 12 | at_most: section.settings.heading_size
+  assign heading_size_cqw = section.settings.heading_size | divided_by: 6.2
+
+  assign button_size_floor = section.settings.button_size | times: 0.65 | at_least: 12 | at_most: section.settings.button_size
+  assign button_size_cqw = section.settings.button_size | divided_by: 6.2
+
+  # Input floor stays at 16px (never lower) so mobile Safari doesn't
+  # zoom in on focus, unless the merchant's own desktop size is smaller.
+  assign input_size_floor = 16 | at_most: section.settings.input_size
+  assign input_size_cqw = section.settings.input_size | divided_by: 6.2
+
+  # Card padding's mobile floor is merchant-editable (card_padding_mobile)
+  # instead of an auto ratio, so it can be dialled in directly.
+  assign card_padding_floor = section.settings.card_padding_mobile | at_most: section.settings.card_padding
+  assign card_padding_cqw = section.settings.card_padding | divided_by: 6.2
+
+  assign card_min_height_floor = section.settings.card_min_height | times: 0.5 | at_most: section.settings.card_min_height
+  assign card_min_height_cqw = section.settings.card_min_height | divided_by: 6.2
+
+  assign card_offset_x_cqw = section.settings.card_offset_x | divided_by: 6.2
+  assign card_offset_y_cqw = section.settings.card_offset_y | divided_by: 6.2
+
+  # Name/email box height + rounding and the Join button's padding are
+  # fully editable per view: the "mobile" setting is the floor, the
+  # "desktop" setting is the ceiling, and it scales fluidly between them.
+  assign field_height_floor = section.settings.field_height_mobile | at_most: section.settings.field_height
+  assign field_height_cqw = section.settings.field_height | divided_by: 6.2
+
+  assign field_radius_floor = section.settings.field_radius_mobile | at_most: section.settings.field_radius
+  assign field_radius_cqw = section.settings.field_radius | divided_by: 6.2
+
+  assign button_padding_v_floor = section.settings.button_padding_v_mobile | at_most: section.settings.button_padding_v
+  assign button_padding_v_cqw = section.settings.button_padding_v | divided_by: 6.2
+
+  assign button_padding_h_floor = section.settings.button_padding_h_mobile | at_most: section.settings.button_padding_h
+  assign button_padding_h_cqw = section.settings.button_padding_h | divided_by: 6.2
 -%}
 {%- style -%}
   {% if heading_font %}{{ heading_font | font_face: font_display: 'swap' }}{% endif %}
@@ -16,7 +62,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
     min-height: {{ section.settings.min_height }}px;
@@ -39,7 +85,19 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    {% if section.settings.background_zoom_enable %}
+      transform: scale({{ section.settings.background_zoom_start_scale | divided_by: 100.0 }});
+      transform-origin: center center;
+      transition: transform {{ section.settings.background_zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    {% endif %}
   }
+
+  {% if section.settings.background_zoom_enable %}
+    .waitlist-{{ section.id }}.waitlist-in-view .waitlist-{{ section.id }}__background img {
+      transform: scale(1);
+    }
+  {% endif %}
 
   .waitlist-{{ section.id }}__overlay {
     position: absolute;
@@ -63,8 +121,21 @@
   }
 
   .waitlist-{{ section.id }}__logo-wrapper {
+    position: relative;
+    z-index: 3;
     margin-bottom: 0.4rem;
+    transform: translate({{ section.settings.logo_offset_x }}px, {{ section.settings.logo_offset_y }}px);
+    {% if section.settings.logo_zoom_enable %}
+      transition: transform {{ section.settings.zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    {% endif %}
   }
+
+  {% if section.settings.logo_zoom_enable %}
+    .waitlist-{{ section.id }}__logo-wrapper.waitlist-in-view {
+      transform: translate({{ section.settings.logo_offset_x }}px, {{ section.settings.logo_offset_y }}px) scale({{ section.settings.logo_zoom_end_scale | divided_by: 100.0 }});
+    }
+  {% endif %}
 
   .waitlist-{{ section.id }}__logo {
     width: {{ section.settings.logo_width }}px;
@@ -78,7 +149,7 @@
     margin: 0;
     line-height: 1.2;
     letter-spacing: 0.06em;
-    font-size: {{ section.settings.heading_size | divided_by: 10.0 }}rem;
+    font-size: clamp({{ heading_size_floor | divided_by: 10.0 }}rem, {{ heading_size_cqw }}cqw, {{ section.settings.heading_size | divided_by: 10.0 }}rem);
     color: {{ section.settings.heading_color }};
     {% if heading_font %}
       font-family: {{ heading_font.family }}, {{ heading_font.fallback_families }};
@@ -91,7 +162,7 @@
 
   .waitlist-{{ section.id }}__form-button {
     letter-spacing: 0.06em;
-    font-size: {{ section.settings.button_size | divided_by: 10.0 }}rem;
+    font-size: clamp({{ button_size_floor | divided_by: 10.0 }}rem, {{ button_size_cqw }}cqw, {{ section.settings.button_size | divided_by: 10.0 }}rem);
     color: {{ section.settings.button_color }};
     {% if button_font %}
       font-family: {{ button_font.family }}, {{ button_font.fallback_families }};
@@ -103,6 +174,8 @@
   }
 
   .waitlist-{{ section.id }}__subheading {
+    position: relative;
+    z-index: 3;
     margin: 1.25rem 0 0;
     padding: 0.6rem 1.4rem;
     border-radius: 999px;
@@ -113,6 +186,7 @@
     letter-spacing: 0.06em;
     font-size: {{ section.settings.subheading_size | divided_by: 10.0 }}rem;
     color: {{ section.settings.subheading_color }};
+    transform: translate({{ section.settings.subheading_offset_x }}px, {{ section.settings.subheading_offset_y }}px);
     {% if subheading_font %}
       font-family: {{ subheading_font.family }}, {{ subheading_font.fallback_families }};
       font-weight: {{ subheading_font.weight }};
@@ -120,7 +194,17 @@
     {% else %}
       font-weight: 700;
     {% endif %}
+    {% if section.settings.subheading_zoom_enable %}
+      transition: transform {{ section.settings.zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    {% endif %}
   }
+
+  {% if section.settings.subheading_zoom_enable %}
+    .waitlist-{{ section.id }}__subheading.waitlist-in-view {
+      transform: translate({{ section.settings.subheading_offset_x }}px, {{ section.settings.subheading_offset_y }}px) scale({{ section.settings.subheading_zoom_end_scale | divided_by: 100.0 }});
+    }
+  {% endif %}
 
   /* Normalize whatever tag the subheading richtext uses (p, h5, ...)
      so it always renders in the shared accent style, not a heading. */
@@ -137,7 +221,29 @@
   .waitlist-{{ section.id }}__window {
     position: relative;
     width: 100%;
-    max-width: 62rem;
+    max-width: {{ section.settings.window_max_width }}px;
+    container-type: inline-size;
+    {% if section.settings.zoom_enable %}
+      transform: scale(1);
+      transform-origin: center center;
+      transition: transform {{ section.settings.zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    {% endif %}
+  }
+
+  {% if section.settings.zoom_enable %}
+    .waitlist-{{ section.id }}__window.waitlist-in-view {
+      transform: scale({{ section.settings.zoom_end_scale | divided_by: 100.0 }});
+    }
+  {% endif %}
+
+  @media (prefers-reduced-motion: reduce) {
+    .waitlist-{{ section.id }}__window,
+    .waitlist-{{ section.id }}__logo-wrapper,
+    .waitlist-{{ section.id }}__subheading,
+    .waitlist-{{ section.id }}__background img {
+      transition: none;
+    }
   }
 
   .waitlist-{{ section.id }}__window-image-frame {
@@ -161,7 +267,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.3rem;
+    gap: clamp(0.65rem, 2.097cqw, 1.3rem);
     overflow: visible;
     padding: 0.5rem;
   }
@@ -208,7 +314,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.25rem;
+    gap: clamp(0.6rem, 2.016cqw, 1.25rem);
     border: 7px solid {{ section.settings.window_frame_color }};
     border-top: none;
     border-radius: 0 0 16px 16px;
@@ -218,8 +324,8 @@
     box-shadow:
       inset 0 0 22px rgba(255, 255, 255, 0.35),
       0 20px 32px -14px rgba(80, 50, 40, 0.35);
-    padding: 2rem 2rem 1.75rem;
-    min-height: 16rem;
+    padding: clamp(1rem, 3.226cqw, 2rem) clamp(1rem, 3.226cqw, 2rem) clamp(0.9rem, 2.823cqw, 1.75rem);
+    min-height: clamp(8rem, 25.806cqw, 16rem);
   }
 
   .waitlist-{{ section.id }}__window-transom {
@@ -251,13 +357,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.3rem;
+    gap: clamp(0.65rem, 2.097cqw, 1.3rem);
     width: 100%;
     max-width: {{ section.settings.card_width }}%;
-    min-height: {{ section.settings.card_min_height }}px;
-    padding: {{ section.settings.card_padding }}px;
+    min-height: clamp({{ card_min_height_floor }}px, {{ card_min_height_cqw }}cqw, {{ section.settings.card_min_height }}px);
+    padding: clamp({{ card_padding_floor }}px, {{ card_padding_cqw }}cqw, {{ section.settings.card_padding }}px);
     border-radius: {{ section.settings.card_radius }}px;
-    transform: translate({{ section.settings.card_offset_x }}px, {{ section.settings.card_offset_y }}px);
+    transform: translate({{ card_offset_x_cqw }}cqw, {{ card_offset_y_cqw }}cqw);
     {% if section.settings.show_card %}
       background: {{ section.settings.card_color | color_modify: 'alpha', card_alpha }};
       border: 1px solid rgba(255, 255, 255, 0.55);
@@ -282,7 +388,7 @@
     flex-direction: column;
     align-items: stretch;
     width: 100%;
-    gap: 1.4rem;
+    gap: clamp(0.7rem, 2.258cqw, 1.4rem);
   }
 
   /* Each field is a rose-water pill holding just the input + placeholder. */
@@ -291,8 +397,8 @@
     display: flex;
     align-items: center;
     width: 100%;
-    height: 3.2rem;
-    border-radius: 999px;
+    height: clamp({{ field_height_floor }}px, {{ field_height_cqw }}cqw, {{ section.settings.field_height }}px);
+    border-radius: clamp({{ field_radius_floor }}px, {{ field_radius_cqw }}cqw, {{ section.settings.field_radius }}px);
     border: 1.5px solid {{ section.settings.window_frame_color | color_modify: 'alpha', 0.6 }};
     background: {{ section.settings.field_color }};
     box-shadow:
@@ -318,7 +424,7 @@
     padding: 0 1.4rem;
     margin: 0;
     box-shadow: none;
-    font-size: {{ section.settings.input_size | divided_by: 10.0 }}rem;
+    font-size: clamp({{ input_size_floor | divided_by: 10.0 }}rem, {{ input_size_cqw }}cqw, {{ section.settings.input_size | divided_by: 10.0 }}rem);
     text-align: left;
     color: {{ section.settings.input_color }};
     {% if input_font %}
@@ -348,10 +454,11 @@
     min-height: 0;
     height: auto;
     margin: 0.25rem 0 0;
-    padding: 0.85rem 2.8rem;
+    padding: clamp({{ button_padding_v_floor }}px, {{ button_padding_v_cqw }}cqw, {{ section.settings.button_padding_v }}px) clamp({{ button_padding_h_floor }}px, {{ button_padding_h_cqw }}cqw, {{ section.settings.button_padding_h }}px);
     border: none;
     border-radius: 999px;
     background: {{ section.settings.window_frame_color }};
+    white-space: nowrap;
     line-height: 1;
     cursor: pointer;
     box-shadow: 0 8px 18px rgba(125, 74, 82, 0.32);
@@ -456,7 +563,7 @@
     {%- endif -%}
 
     {%- if section.settings.klaviyo_form_class != blank -%}
-      <div class="waitlist-{{ section.id }}__window{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+      <div class="waitlist-{{ section.id }}__window{% if settings.animations_reveal_on_scroll and section.settings.zoom_enable != true %} scroll-trigger animate--slide-in{% endif %}">
         {%- if section.settings.window_image != blank -%}
           <div class="waitlist-{{ section.id }}__window-image-frame">
             {{
@@ -516,6 +623,51 @@
 </div>
 
 <script src="{{ 'waitlist-signup-form.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign any_zoom_enabled = false
+  if section.settings.zoom_enable or section.settings.logo_zoom_enable or section.settings.subheading_zoom_enable or section.settings.background_zoom_enable
+    assign any_zoom_enabled = true
+  endif
+-%}
+{%- if any_zoom_enabled -%}
+  <script>
+    (function () {
+      var selectors = [];
+      {% if section.settings.zoom_enable %}selectors.push('.waitlist-{{ section.id }}__window');{% endif %}
+      {% if section.settings.logo_zoom_enable %}selectors.push('.waitlist-{{ section.id }}__logo-wrapper');{% endif %}
+      {% if section.settings.subheading_zoom_enable %}selectors.push('.waitlist-{{ section.id }}__subheading');{% endif %}
+      {% if section.settings.background_zoom_enable %}selectors.push('.waitlist-{{ section.id }}');{% endif %}
+
+      var hasIO = 'IntersectionObserver' in window;
+
+      selectors.forEach(function (selector) {
+        var target = document.querySelector(selector);
+        if (!target) return;
+
+        function revealIn() {
+          target.classList.add('waitlist-in-view');
+        }
+
+        if (!hasIO) {
+          revealIn();
+          return;
+        }
+
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              revealIn();
+              observer.unobserve(target);
+            }
+          });
+        }, { threshold: 0.2 });
+
+        observer.observe(target);
+      });
+    })();
+  </script>
+{%- endif -%}
 
 {% schema %}
 {
@@ -673,8 +825,8 @@
       "type": "range",
       "id": "card_min_height",
       "min": 0,
-      "max": 500,
-      "step": 5,
+      "max": 900,
+      "step": 10,
       "unit": "px",
       "label": "Card minimum height (bottom corner)",
       "default": 0
@@ -716,8 +868,19 @@
       "max": 80,
       "step": 2,
       "unit": "px",
-      "label": "Card inner padding",
+      "label": "Card inner padding (desktop)",
       "default": 20
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Card inner padding (phone)",
+      "info": "The card scales smoothly between this and the desktop padding above as the window shrinks.",
+      "default": 10
     },
     {
       "type": "header",
@@ -740,6 +903,88 @@
       "default": 150
     },
     {
+      "type": "range",
+      "id": "logo_offset_x",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Logo horizontal position",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "logo_offset_y",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Logo vertical position",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "logo_zoom_enable",
+      "label": "Animate logo zooming in on scroll",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "logo_zoom_end_scale",
+      "min": 50,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "Logo end size",
+      "info": "Only used when the zoom animation above is on.",
+      "default": 115
+    },
+    {
+      "type": "header",
+      "content": "Subheading position"
+    },
+    {
+      "type": "paragraph",
+      "content": "Position and animate the \"Launch offers...\" text below the window."
+    },
+    {
+      "type": "range",
+      "id": "subheading_offset_x",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Subheading horizontal position",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "subheading_offset_y",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Subheading vertical position",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "subheading_zoom_enable",
+      "label": "Animate subheading zooming in on scroll",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "subheading_zoom_end_scale",
+      "min": 50,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "Subheading end size",
+      "info": "Only used when the zoom animation above is on.",
+      "default": 115
+    },
+    {
       "type": "header",
       "content": "Signup form"
     },
@@ -753,6 +998,89 @@
       "label": "Input box color",
       "info": "Fill for the Name and Email boxes. Default is rose water.",
       "default": "#F7DEDE"
+    },
+    {
+      "type": "range",
+      "id": "field_height",
+      "min": 30,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Name/email box height (desktop)",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "field_height_mobile",
+      "min": 20,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Name/email box height (phone)",
+      "info": "The box scales smoothly between this and the desktop height above as the window shrinks.",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "field_radius",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Name/email box corner rounding (desktop)",
+      "info": "Set to half the box height (or higher) for a full pill shape.",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "field_radius_mobile",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "px",
+      "label": "Name/email box corner rounding (phone)",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "button_padding_v",
+      "min": 4,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Join button vertical padding (desktop)",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "button_padding_v_mobile",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Join button vertical padding (phone)",
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "button_padding_h",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Join button horizontal padding (desktop)",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "button_padding_h_mobile",
+      "min": 6,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Join button horizontal padding (phone)",
+      "info": "Join Waitlist always stays on a single line; reduce this if the button looks too wide on phones.",
+      "default": 14
     },
     {
       "type": "text",
@@ -782,6 +1110,17 @@
     {
       "type": "paragraph",
       "content": "The signup form is framed by an arched window. Upload your own window graphic below to replace the built-in CSS window, or leave it blank to keep the tinted-glass version."
+    },
+    {
+      "type": "range",
+      "id": "window_max_width",
+      "min": 300,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "label": "Window base width",
+      "info": "Caps how wide the window (and the card, its text and the form riding inside it) can render. It's allowed to exceed a phone's screen width -- the window will spill past the edges rather than get squeezed down. The zoom-in animation's end size (below) multiplies this.",
+      "default": 620
     },
     {
       "type": "image_picker",
@@ -854,12 +1193,75 @@
     },
     {
       "type": "header",
+      "content": "Entrance animation"
+    },
+    {
+      "type": "paragraph",
+      "content": "When a visitor scrolls the window into view, it (with the card, its text and the form riding along inside it) grows from the size set above to the size below and stays there -- like it's moving toward the viewer. It's fine for the window graphic to spill outside its own box; the logo above and the \"Launch offers...\" text below always stay on top of it. The logo, subheading and background image each have their own independent zoom toggle -- see the Logo, Subheading position and Background sections."
+    },
+    {
+      "type": "checkbox",
+      "id": "zoom_enable",
+      "label": "Animate window zooming in on scroll",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "zoom_end_scale",
+      "min": 100,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "End size",
+      "info": "100% = no growth. 115% means the window (and card) end up 15% larger than the size set elsewhere in this section.",
+      "default": 115
+    },
+    {
+      "type": "range",
+      "id": "zoom_duration",
+      "min": 400,
+      "max": 3000,
+      "step": 100,
+      "unit": "ms",
+      "label": "Animation duration",
+      "default": 1200
+    },
+    {
+      "type": "header",
       "content": "Background"
     },
     {
       "type": "image_picker",
       "id": "background_image",
       "label": "Background image"
+    },
+    {
+      "type": "checkbox",
+      "id": "background_zoom_enable",
+      "label": "Animate background zooming out on scroll",
+      "info": "The background image starts zoomed in and eases out to its normal size when the section scrolls into view.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "background_zoom_start_scale",
+      "min": 100,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "Background start size (zoomed in)",
+      "info": "Only used when the zoom-out animation above is on.",
+      "default": 130
+    },
+    {
+      "type": "range",
+      "id": "background_zoom_duration",
+      "min": 400,
+      "max": 3000,
+      "step": 100,
+      "unit": "ms",
+      "label": "Background zoom-out duration",
+      "default": 1500
     },
     {
       "type": "color",
