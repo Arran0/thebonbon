@@ -85,7 +85,19 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    {% if section.settings.background_zoom_enable %}
+      transform: scale({{ section.settings.background_zoom_start_scale | divided_by: 100.0 }});
+      transform-origin: center center;
+      transition: transform {{ section.settings.background_zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    {% endif %}
   }
+
+  {% if section.settings.background_zoom_enable %}
+    .waitlist-{{ section.id }}.waitlist-in-view .waitlist-{{ section.id }}__background img {
+      transform: scale(1);
+    }
+  {% endif %}
 
   .waitlist-{{ section.id }}__overlay {
     position: absolute;
@@ -112,7 +124,18 @@
     position: relative;
     z-index: 3;
     margin-bottom: 0.4rem;
+    transform: translate({{ section.settings.logo_offset_x }}px, {{ section.settings.logo_offset_y }}px);
+    {% if section.settings.logo_zoom_enable %}
+      transition: transform {{ section.settings.zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    {% endif %}
   }
+
+  {% if section.settings.logo_zoom_enable %}
+    .waitlist-{{ section.id }}__logo-wrapper.waitlist-in-view {
+      transform: translate({{ section.settings.logo_offset_x }}px, {{ section.settings.logo_offset_y }}px) scale({{ section.settings.logo_zoom_end_scale | divided_by: 100.0 }});
+    }
+  {% endif %}
 
   .waitlist-{{ section.id }}__logo {
     width: {{ section.settings.logo_width }}px;
@@ -163,6 +186,7 @@
     letter-spacing: 0.06em;
     font-size: {{ section.settings.subheading_size | divided_by: 10.0 }}rem;
     color: {{ section.settings.subheading_color }};
+    transform: translate({{ section.settings.subheading_offset_x }}px, {{ section.settings.subheading_offset_y }}px);
     {% if subheading_font %}
       font-family: {{ subheading_font.family }}, {{ subheading_font.fallback_families }};
       font-weight: {{ subheading_font.weight }};
@@ -170,7 +194,17 @@
     {% else %}
       font-weight: 700;
     {% endif %}
+    {% if section.settings.subheading_zoom_enable %}
+      transition: transform {{ section.settings.zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    {% endif %}
   }
+
+  {% if section.settings.subheading_zoom_enable %}
+    .waitlist-{{ section.id }}__subheading.waitlist-in-view {
+      transform: translate({{ section.settings.subheading_offset_x }}px, {{ section.settings.subheading_offset_y }}px) scale({{ section.settings.subheading_zoom_end_scale | divided_by: 100.0 }});
+    }
+  {% endif %}
 
   /* Normalize whatever tag the subheading richtext uses (p, h5, ...)
      so it always renders in the shared accent style, not a heading. */
@@ -198,16 +232,19 @@
   }
 
   {% if section.settings.zoom_enable %}
-    .waitlist-{{ section.id }}__window.waitlist-zoom-in {
+    .waitlist-{{ section.id }}__window.waitlist-in-view {
       transform: scale({{ section.settings.zoom_end_scale | divided_by: 100.0 }});
     }
-
-    @media (prefers-reduced-motion: reduce) {
-      .waitlist-{{ section.id }}__window {
-        transition: none;
-      }
-    }
   {% endif %}
+
+  @media (prefers-reduced-motion: reduce) {
+    .waitlist-{{ section.id }}__window,
+    .waitlist-{{ section.id }}__logo-wrapper,
+    .waitlist-{{ section.id }}__subheading,
+    .waitlist-{{ section.id }}__background img {
+      transition: none;
+    }
+  }
 
   .waitlist-{{ section.id }}__window-image-frame {
     position: relative;
@@ -587,31 +624,47 @@
 
 <script src="{{ 'waitlist-signup-form.js' | asset_url }}" defer="defer"></script>
 
-{%- if section.settings.zoom_enable -%}
+{%- liquid
+  assign any_zoom_enabled = false
+  if section.settings.zoom_enable or section.settings.logo_zoom_enable or section.settings.subheading_zoom_enable or section.settings.background_zoom_enable
+    assign any_zoom_enabled = true
+  endif
+-%}
+{%- if any_zoom_enabled -%}
   <script>
     (function () {
-      var target = document.querySelector('.waitlist-{{ section.id }}__window');
-      if (!target) return;
+      var selectors = [];
+      {% if section.settings.zoom_enable %}selectors.push('.waitlist-{{ section.id }}__window');{% endif %}
+      {% if section.settings.logo_zoom_enable %}selectors.push('.waitlist-{{ section.id }}__logo-wrapper');{% endif %}
+      {% if section.settings.subheading_zoom_enable %}selectors.push('.waitlist-{{ section.id }}__subheading');{% endif %}
+      {% if section.settings.background_zoom_enable %}selectors.push('.waitlist-{{ section.id }}');{% endif %}
 
-      function zoomIn() {
-        target.classList.add('waitlist-zoom-in');
-      }
+      var hasIO = 'IntersectionObserver' in window;
 
-      if (!('IntersectionObserver' in window)) {
-        zoomIn();
-        return;
-      }
+      selectors.forEach(function (selector) {
+        var target = document.querySelector(selector);
+        if (!target) return;
 
-      var observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            zoomIn();
-            observer.unobserve(target);
-          }
-        });
-      }, { threshold: 0.2 });
+        function revealIn() {
+          target.classList.add('waitlist-in-view');
+        }
 
-      observer.observe(target);
+        if (!hasIO) {
+          revealIn();
+          return;
+        }
+
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              revealIn();
+              observer.unobserve(target);
+            }
+          });
+        }, { threshold: 0.2 });
+
+        observer.observe(target);
+      });
     })();
   </script>
 {%- endif -%}
@@ -850,6 +903,88 @@
       "default": 150
     },
     {
+      "type": "range",
+      "id": "logo_offset_x",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Logo horizontal position",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "logo_offset_y",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Logo vertical position",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "logo_zoom_enable",
+      "label": "Animate logo zooming in on scroll",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "logo_zoom_end_scale",
+      "min": 50,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "Logo end size",
+      "info": "Only used when the zoom animation above is on.",
+      "default": 115
+    },
+    {
+      "type": "header",
+      "content": "Subheading position"
+    },
+    {
+      "type": "paragraph",
+      "content": "Position and animate the \"Launch offers...\" text below the window."
+    },
+    {
+      "type": "range",
+      "id": "subheading_offset_x",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Subheading horizontal position",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "subheading_offset_y",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Subheading vertical position",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "subheading_zoom_enable",
+      "label": "Animate subheading zooming in on scroll",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "subheading_zoom_end_scale",
+      "min": 50,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "Subheading end size",
+      "info": "Only used when the zoom animation above is on.",
+      "default": 115
+    },
+    {
       "type": "header",
       "content": "Signup form"
     },
@@ -1062,7 +1197,7 @@
     },
     {
       "type": "paragraph",
-      "content": "When a visitor scrolls the window into view, it (with the card, its text and the form riding along inside it) grows from the size set above to the size below and stays there -- like it's moving toward the viewer. It's fine for the window graphic to spill outside its own box; the logo above and the \"Launch offers...\" text below always stay on top of it."
+      "content": "When a visitor scrolls the window into view, it (with the card, its text and the form riding along inside it) grows from the size set above to the size below and stays there -- like it's moving toward the viewer. It's fine for the window graphic to spill outside its own box; the logo above and the \"Launch offers...\" text below always stay on top of it. The logo, subheading and background image each have their own independent zoom toggle -- see the Logo, Subheading position and Background sections."
     },
     {
       "type": "checkbox",
@@ -1099,6 +1234,34 @@
       "type": "image_picker",
       "id": "background_image",
       "label": "Background image"
+    },
+    {
+      "type": "checkbox",
+      "id": "background_zoom_enable",
+      "label": "Animate background zooming out on scroll",
+      "info": "The background image starts zoomed in and eases out to its normal size when the section scrolls into view.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "background_zoom_start_scale",
+      "min": 100,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "Background start size (zoomed in)",
+      "info": "Only used when the zoom-out animation above is on.",
+      "default": 130
+    },
+    {
+      "type": "range",
+      "id": "background_zoom_duration",
+      "min": 400,
+      "max": 3000,
+      "step": 100,
+      "unit": "ms",
+      "label": "Background zoom-out duration",
+      "default": 1500
     },
     {
       "type": "color",
