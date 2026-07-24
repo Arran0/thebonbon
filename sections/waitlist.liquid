@@ -35,6 +35,8 @@
 
   assign card_offset_x_cqw = section.settings.card_offset_x | divided_by: 6.2
   assign card_offset_y_cqw = section.settings.card_offset_y | divided_by: 6.2
+  assign card_offset_x_mobile_cqw = section.settings.card_offset_x_mobile | divided_by: 6.2
+  assign card_offset_y_mobile_cqw = section.settings.card_offset_y_mobile | divided_by: 6.2
 
   # Name/email box height + rounding and the Join button's padding are
   # fully editable per view: the "mobile" setting is the floor, the
@@ -245,7 +247,7 @@
   .waitlist-{{ section.id }}__window {
     position: relative;
     width: 100%;
-    max-width: {{ section.settings.window_max_width }}px;
+    max-width: {{ section.settings.window_max_width_mobile }}px;
     container-type: inline-size;
     {% if section.settings.zoom_enable %}
       transform: scale(1);
@@ -260,6 +262,12 @@
       transform: scale({{ section.settings.zoom_end_scale | divided_by: 100.0 }});
     }
   {% endif %}
+
+  @media screen and (min-width: 750px) {
+    .waitlist-{{ section.id }}__window {
+      max-width: {{ section.settings.window_max_width }}px;
+    }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .waitlist-{{ section.id }}__window,
@@ -387,7 +395,7 @@
     min-height: clamp({{ card_min_height_floor }}px, {{ card_min_height_cqw }}cqw, {{ section.settings.card_min_height }}px);
     padding: clamp({{ card_padding_floor }}px, {{ card_padding_cqw }}cqw, {{ section.settings.card_padding }}px);
     border-radius: {{ section.settings.card_radius }}px;
-    transform: translate({{ card_offset_x_cqw }}cqw, {{ card_offset_y_cqw }}cqw);
+    transform: translate({{ card_offset_x_mobile_cqw }}cqw, {{ card_offset_y_mobile_cqw }}cqw);
     {% if section.settings.show_card %}
       background: {{ section.settings.card_color | color_modify: 'alpha', card_alpha }};
       border: 1px solid rgba(255, 255, 255, 0.55);
@@ -397,6 +405,12 @@
       backdrop-filter: blur(6px) saturate(115%);
       -webkit-backdrop-filter: blur(6px) saturate(115%);
     {% endif %}
+  }
+
+  @media screen and (min-width: 750px) {
+    .waitlist-{{ section.id }}__card {
+      transform: translate({{ card_offset_x_cqw }}cqw, {{ card_offset_y_cqw }}cqw);
+    }
   }
 
   .waitlist-{{ section.id }}__form-wrapper {
@@ -577,7 +591,7 @@
       {%- liquid
         assign logo_class = 'waitlist-' | append: section.id | append: '__logo'
       -%}
-      <div class="waitlist-{{ section.id }}__logo-wrapper{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+      <div class="waitlist-{{ section.id }}__logo-wrapper">
         {{
           section.settings.logo
           | image_url: width: 2000
@@ -632,7 +646,7 @@
     {%- endif -%}
 
     {%- if section.settings.subheading != blank -%}
-      <div class="waitlist-{{ section.id }}__subheading rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+      <div class="waitlist-{{ section.id }}__subheading rte">
         {{ section.settings.subheading }}
       </div>
     {%- endif -%}
@@ -862,7 +876,17 @@
       "max": 200,
       "step": 4,
       "unit": "px",
-      "label": "Card horizontal offset (left corner)",
+      "label": "Card horizontal offset (desktop)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "card_offset_x_mobile",
+      "min": -200,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "label": "Card horizontal offset (phone)",
       "default": 0
     },
     {
@@ -872,7 +896,17 @@
       "max": 200,
       "step": 4,
       "unit": "px",
-      "label": "Card vertical offset (top corner)",
+      "label": "Card vertical offset (desktop)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "card_offset_y_mobile",
+      "min": -200,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "label": "Card vertical offset (phone)",
       "default": 0
     },
     {
@@ -1182,8 +1216,19 @@
       "max": 1200,
       "step": 20,
       "unit": "px",
-      "label": "Window base width",
-      "info": "Caps how wide the window (and the card, its text and the form riding inside it) can render. It's allowed to exceed a phone's screen width -- the window will spill past the edges rather than get squeezed down. The zoom-in animation's end size (below) multiplies this.",
+      "label": "Window base width (desktop)",
+      "info": "Caps how wide the window (and the card, its text and the form riding inside it) can render. The zoom-in animation's end size (below) multiplies this.",
+      "default": 620
+    },
+    {
+      "type": "range",
+      "id": "window_max_width_mobile",
+      "min": 300,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "label": "Window base width (phone)",
+      "info": "Allowed to exceed a phone's screen width -- the window will spill past the edges rather than get squeezed down.",
       "default": 620
     },
     {
