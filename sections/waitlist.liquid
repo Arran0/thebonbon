@@ -249,8 +249,8 @@
     width: 100%;
     max-width: {{ section.settings.window_max_width_mobile }}px;
     container-type: inline-size;
+    transform: translate({{ section.settings.window_offset_x_mobile }}px, {{ section.settings.window_offset_y_mobile }}px){% if section.settings.zoom_enable %} scale({{ section.settings.zoom_start_scale | divided_by: 100.0 }}){% endif %};
     {% if section.settings.zoom_enable %}
-      transform: scale({{ section.settings.zoom_start_scale | divided_by: 100.0 }});
       transform-origin: center center;
       transition: transform {{ section.settings.zoom_duration | divided_by: 1000.0 }}s cubic-bezier(0.16, 1, 0.3, 1);
       will-change: transform;
@@ -259,14 +259,21 @@
 
   {% if section.settings.zoom_enable %}
     .waitlist-{{ section.id }}__window.waitlist-in-view {
-      transform: scale(1);
+      transform: translate({{ section.settings.window_offset_x_mobile }}px, {{ section.settings.window_offset_y_mobile }}px) scale(1);
     }
   {% endif %}
 
   @media screen and (min-width: 750px) {
     .waitlist-{{ section.id }}__window {
       max-width: {{ section.settings.window_max_width }}px;
+      transform: translate({{ section.settings.window_offset_x }}px, {{ section.settings.window_offset_y }}px){% if section.settings.zoom_enable %} scale({{ section.settings.zoom_start_scale | divided_by: 100.0 }}){% endif %};
     }
+
+    {% if section.settings.zoom_enable %}
+      .waitlist-{{ section.id }}__window.waitlist-in-view {
+        transform: translate({{ section.settings.window_offset_x }}px, {{ section.settings.window_offset_y }}px) scale(1);
+      }
+    {% endif %}
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1230,6 +1237,46 @@
       "label": "Window base width (phone)",
       "info": "Allowed to exceed a phone's screen width -- the window will spill past the edges rather than get squeezed down.",
       "default": 620
+    },
+    {
+      "type": "range",
+      "id": "window_offset_x",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Window horizontal position (desktop)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "window_offset_x_mobile",
+      "min": -150,
+      "max": 150,
+      "step": 3,
+      "unit": "px",
+      "label": "Window horizontal position (phone)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "window_offset_y",
+      "min": -300,
+      "max": 300,
+      "step": 6,
+      "unit": "px",
+      "label": "Window vertical position (desktop)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "window_offset_y_mobile",
+      "min": -150,
+      "max": 150,
+      "step": 3,
+      "unit": "px",
+      "label": "Window vertical position (phone)",
+      "default": 0
     },
     {
       "type": "image_picker",
