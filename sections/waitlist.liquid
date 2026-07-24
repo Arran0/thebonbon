@@ -111,12 +111,19 @@
     }
   }
 
-  .waitlist-{{ section.id }}__background {
+  .waitlist-{{ section.id }}__background-fill {
     position: absolute;
     top: 0;
     bottom: 0;
     left: -{{ background_buffer_x }}px;
     right: -{{ background_buffer_x }}px;
+    z-index: -1;
+    background: {{ section.settings.overlay_color }};
+  }
+
+  .waitlist-{{ section.id }}__background {
+    position: absolute;
+    inset: 0;
     z-index: 0;
   }
 
@@ -636,17 +643,27 @@
 {%- endstyle -%}
 
 <div class="waitlist-{{ section.id }} color-{{ section.settings.color_scheme }} gradient">
-  {%- if section.settings.background_image != blank -%}
-    <div class="waitlist-{{ section.id }}__background">
-      {{
-        section.settings.background_image
-        | image_url: width: 3000
-        | image_tag:
-          loading: 'lazy',
-          widths: '750, 1100, 1500, 2000, 3000',
-          sizes: '100vw'
-      }}
-    </div>
+  {%- if section.settings.background_image != blank or section.settings.background_image_mobile != blank -%}
+    <div class="waitlist-{{ section.id }}__background-fill"></div>
+    <picture class="waitlist-{{ section.id }}__background">
+      {%- if section.settings.background_image_mobile != blank -%}
+        {%- liquid
+          assign bg_mobile_750 = section.settings.background_image_mobile | image_url: width: 750
+          assign bg_mobile_1100 = section.settings.background_image_mobile | image_url: width: 1100
+        -%}
+        <source media="(max-width: 749px)" srcset="{{ bg_mobile_750 }} 750w, {{ bg_mobile_1100 }} 1100w">
+      {%- endif -%}
+      {%- if section.settings.background_image != blank -%}
+        {{
+          section.settings.background_image
+          | image_url: width: 3000
+          | image_tag:
+            loading: 'lazy',
+            widths: '750, 1100, 1500, 2000, 3000',
+            sizes: '100vw'
+        }}
+      {%- endif -%}
+    </picture>
     <div class="waitlist-{{ section.id }}__overlay"></div>
   {%- endif -%}
 
@@ -1530,7 +1547,14 @@
     {
       "type": "image_picker",
       "id": "background_image",
-      "label": "Background image"
+      "label": "Background image (desktop)",
+      "info": "A landscape image works best. Shown from 750px screen width up, and also used on phone if no phone image is set below."
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image_mobile",
+      "label": "Background image (phone)",
+      "info": "A portrait image works best. Shown below 750px screen width; falls back to the desktop image above if left blank."
     },
     {
       "type": "checkbox",
