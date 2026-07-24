@@ -269,8 +269,7 @@
 
   .waitlist-{{ section.id }}__window {
     position: relative;
-    width: 100%;
-    max-width: {{ window_static_max_width_mobile }}px;
+    width: {{ window_static_max_width_mobile }}px;
     container-type: inline-size;
     transform: translate({{ section.settings.window_offset_x_mobile }}px, {{ section.settings.window_offset_y_mobile }}px){% if section.settings.zoom_enable %} scale({{ window_rest_scale }}){% endif %};
     {% if section.settings.zoom_enable %}
@@ -288,7 +287,7 @@
 
   @media screen and (min-width: 750px) {
     .waitlist-{{ section.id }}__window {
-      max-width: {{ window_static_max_width }}px;
+      width: {{ window_static_max_width }}px;
       transform: translate({{ section.settings.window_offset_x }}px, {{ section.settings.window_offset_y }}px){% if section.settings.zoom_enable %} scale({{ window_rest_scale }}){% endif %};
     }
 
